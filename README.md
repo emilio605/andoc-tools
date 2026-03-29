@@ -1,16 +1,66 @@
-# React + Vite
+# Andoc Creativo — Herramientas Operacionales
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Panel integrado con 4 herramientas operacionales para la gestión de onboarding, briefs y propuestas comerciales de Andoc Creativo.
 
-Currently, two official plugins are available:
+## Herramientas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. **Onboarding SOP** — Guía paso a paso con 6 fases, tareas y notas para el onboarding de clientes nuevos.
+2. **Brief de Descubrimiento** — Formulario completo con 6 secciones para recopilar información en la reunión de descubrimiento.
+3. **Brief IA** — Auto-completar brief desde transcripción de reunión usando Claude API.
+4. **Propuesta Comercial** — Generador de propuestas con servicios editables, precios en UF e IVA.
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 18 + Vite
+- **Routing**: React Router v6
+- **Fonts**: Google Fonts (DM Sans + DM Mono)
+- **Design**: Dark theme (#0f0f13), Andoc branding (#F97316)
+- **API**: Anthropic Claude Sonnet 4 (para Brief IA)
+- **Deploy**: Vercel
 
-## Expanding the ESLint configuration
+## Instalación
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+## Desarrollo
+
+```bash
+npm run dev
+```
+
+Abre [http://localhost:5173](http://localhost:5173) para ver la app.
+
+## Build
+
+```bash
+npm run build
+```
+
+## Variables de Entorno
+
+Crea un archivo `.env.local` en la raíz del proyecto:
+
+```
+VITE_ANTHROPIC_API_KEY=tu-clave-aqui
+```
+
+## Deployment en Vercel
+
+1. Sube el repositorio a GitHub
+2. Conecta tu repositorio a Vercel
+3. Configura la variable de entorno `VITE_ANTHROPIC_API_KEY` en el dashboard de Vercel
+4. Deploy automático en cada push a main
+
+## Rutas
+
+- `/` — Home / Landing
+- `/onboarding` — Onboarding SOP
+- `/brief` — Brief de Descubrimiento
+- `/brief-ia` — Brief IA (Auto-completar)
+- `/propuesta` — Propuesta Comercial
+
+---
+
+Desarrollado para Andoc Creativo
