@@ -29,25 +29,43 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    // Obtener sesión inicial
+    let mounted = true
+
+    // Obtener sesión inicial con timeout de seguridad
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        setUser(null)
+        setRole(null)
+        setLoading(false)
+      }
+    }, 8000)
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return
       if (session?.user) {
         setUser(session.user)
         const r = await fetchRole(session.user.id)
-        setRole(r)
+        if (mounted) setRole(r)
       } else {
         setUser(null)
         setRole(null)
       }
-      setLoading(false)
+      if (mounted) setLoading(false)
+    }).catch(() => {
+      if (mounted) {
+        setUser(null)
+        setRole(null)
+        setLoading(false)
+      }
     })
 
     // Escuchar cambios de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return
       if (session?.user) {
         setUser(session.user)
         const r = await fetchRole(session.user.id)
-        setRole(r)
+        if (mounted) setRole(r)
       } else {
         setUser(null)
         setRole(null)
@@ -55,7 +73,11 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function login(email, password) {
