@@ -18,6 +18,7 @@ const tools = [
   { path: '/flujo-caja', label: 'Flujo de Caja', icon: '💰', color: '#22C55E', desc: 'Calculadora financiera' },
   { path: '/auditoria', label: 'Auditoría Shopify', icon: '🛍', color: '#EC4899', desc: 'Auditor de tiendas' },
   { path: '/ads', label: 'Ads Reporter', icon: '📊', color: '#06B6D4', desc: 'Reportes de campañas' },
+  { path: '/plan-medios', label: 'Plan de Medios', icon: '📅', color: '#D4A017', desc: 'Generador de planes PPTX' },
 ]
 
 function getGreeting() {

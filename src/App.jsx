@@ -14,6 +14,7 @@ import Onboarding from './pages/Onboarding'
 import Brief from './pages/Brief'
 import BriefIA from './pages/BriefIA'
 import Propuesta from './pages/Propuesta'
+import PlanMedios from './pages/PlanMedios'
 
 export default function App() {
   return (
@@ -65,6 +66,11 @@ export default function App() {
           <Route path="/ads" element={
             <ProtectedRoute>
               <AdsReporter />
+            </ProtectedRoute>
+          } />
+          <Route path="/plan-medios" element={
+            <ProtectedRoute>
+              <PlanMedios />
             </ProtectedRoute>
           } />
 
