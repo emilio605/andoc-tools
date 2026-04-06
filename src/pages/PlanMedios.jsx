@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
+import { supabase } from '../lib/supabase'
 
 const OBJECTIVES = ['Ventas / Conversiones', 'Tráfico web', 'Fans / Seguidores', 'Awareness / Alcance']
 const CHANNELS = ['Meta Ads (Facebook + Instagram)', 'Google Ads', 'TikTok Ads']
@@ -524,6 +525,19 @@ async function generatePptx(slides, form) {
 }
 
 // ============ MAIN COMPONENT ============
+const SAVED_PLANS_KEY = 'andoc_media_plans'
+
+function loadSavedPlans() {
+  try {
+    const raw = localStorage.getItem(SAVED_PLANS_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch { return [] }
+}
+
+function savePlansToStorage(plans) {
+  localStorage.setItem(SAVED_PLANS_KEY, JSON.stringify(plans.slice(0, 20)))
+}
+
 export default function PlanMedios() {
   const [form, setForm] = useState({
     clientName: '', businessType: '', website: '', budget: '',
@@ -533,6 +547,31 @@ export default function PlanMedios() {
   })
   const [slides, setSlides] = useState(null)
   const [generating, setGenerating] = useState(false)
+  const [clients, setClients] = useState([])
+  const [selectedClientId, setSelectedClientId] = useState('')
+  const [savedPlans, setSavedPlans] = useState([])
+
+  useEffect(() => {
+    async function fetchClients() {
+      const { data } = await supabase.from('clients').select('id, name, industry').order('name')
+      if (data) setClients(data)
+    }
+    fetchClients()
+    setSavedPlans(loadSavedPlans())
+  }, [])
+
+  function handleClientSelect(value) {
+    setSelectedClientId(value)
+    if (value === '') return
+    const client = clients.find(c => String(c.id) === String(value))
+    if (client) {
+      setForm(f => ({
+        ...f,
+        clientName: client.name || '',
+        businessType: client.industry || '',
+      }))
+    }
+  }
 
   function update(field, value) { setForm(f => ({ ...f, [field]: value })) }
   function toggleChannel(ch) {
@@ -545,7 +584,30 @@ export default function PlanMedios() {
 
   function handlePreview() {
     if (!form.clientName || !form.budget) return alert('Completa nombre y presupuesto')
-    setSlides(buildSlides(form))
+    const generatedSlides = buildSlides(form)
+    setSlides(generatedSlides)
+
+    const plan = {
+      id: Date.now(),
+      clientName: form.clientName,
+      businessType: form.businessType,
+      budget: form.budget,
+      date: new Date().toISOString(),
+      slides: generatedSlides,
+    }
+    const updated = [plan, ...savedPlans].slice(0, 20)
+    setSavedPlans(updated)
+    savePlansToStorage(updated)
+  }
+
+  function handleViewPlan(plan) {
+    setSlides(plan.slides)
+  }
+
+  function handleDeletePlan(planId) {
+    const updated = savedPlans.filter(p => p.id !== planId)
+    setSavedPlans(updated)
+    savePlansToStorage(updated)
   }
 
   function updateSlide(index, newSlide) {
@@ -584,7 +646,21 @@ export default function PlanMedios() {
 
         {!slides ? (
           /* ====== FORM ====== */
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 900 }}>
+          <div style={{ maxWidth: 900 }}>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Seleccionar cliente existente</label>
+              <select
+                style={{ ...inputStyle, cursor: 'pointer' }}
+                value={selectedClientId}
+                onChange={e => handleClientSelect(e.target.value)}
+              >
+                <option value="">-- Nuevo cliente --</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}{c.industry ? ` (${c.industry})` : ''}</option>
+                ))}
+              </select>
+            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             <div>
               <label style={labelStyle}>Nombre del cliente *</label>
               <input style={inputStyle} value={form.clientName} onChange={e => update('clientName', e.target.value)} placeholder="Ej: Kolmenares" />
@@ -648,6 +724,29 @@ export default function PlanMedios() {
                 Vista previa del Plan
               </button>
             </div>
+          </div>
+
+          {/* ====== SAVED PLANS ====== */}
+          {savedPlans.length > 0 && (
+            <div style={{ marginTop: 36 }}>
+              <div style={{ fontSize: 11, fontFamily: "'DM Mono', monospace", color: '#94a3b8', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 }}>Planes guardados</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {savedPlans.map(plan => (
+                  <div key={plan.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, background: '#1a1a24', border: '1px solid #1e1e2e' }}>
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'center', flex: 1 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{plan.clientName}</span>
+                      <span style={{ fontSize: 13, color: '#94a3b8' }}>{plan.budget}</span>
+                      <span style={{ fontSize: 12, color: '#475569' }}>{new Date(plan.date).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => handleViewPlan(plan)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #F97316', background: 'transparent', color: '#F97316', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Ver</button>
+                      <button onClick={() => handleDeletePlan(plan.id)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Eliminar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           </div>
         ) : (
           /* ====== PREVIEW ====== */

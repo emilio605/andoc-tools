@@ -1,13 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../context/AuthContext'
-
-const stats = [
-  { label: 'Total Clientes', value: '12', icon: '🏢', color: '#F97316' },
-  { label: 'Briefs este mes', value: '4', icon: '📝', color: '#EAB308' },
-  { label: 'Propuestas enviadas', value: '7', icon: '💼', color: '#3B82F6' },
-  { label: 'Herramientas activas', value: '7', icon: '🛠', color: '#22C55E' },
-]
+import { supabase } from '../lib/supabase'
 
 const tools = [
   { path: '/clientes', label: 'Clientes', icon: '🏢', color: '#F97316', desc: 'Gestión de clientes' },
@@ -31,6 +26,54 @@ function getGreeting() {
 export default function Dashboard() {
   const { user } = useAuth()
   const name = user?.email?.split('@')[0] || 'equipo'
+
+  const [stats, setStats] = useState([
+    { label: 'Total Clientes', value: '...', icon: '🏢', color: '#F97316' },
+    { label: 'Planes de Medios', value: '...', icon: '📅', color: '#EAB308' },
+    { label: 'Herramientas activas', value: '9', icon: '🛠', color: '#3B82F6' },
+    { label: 'Clientes activos', value: '...', icon: '🟢', color: '#22C55E' },
+  ])
+
+  const [recentPlans, setRecentPlans] = useState([])
+
+  useEffect(() => {
+    async function fetchStats() {
+      // Total clients from supabase
+      const { count: totalClients } = await supabase
+        .from('clients')
+        .select('*', { count: 'exact', head: true })
+
+      // Active clients from supabase
+      const { count: activeClients } = await supabase
+        .from('clients')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'activo')
+
+      // Media plans from localStorage
+      let mediaPlans = []
+      try {
+        const raw = localStorage.getItem('andoc_media_plans')
+        if (raw) mediaPlans = JSON.parse(raw)
+      } catch (e) {
+        // ignore parse errors
+      }
+
+      setStats([
+        { label: 'Total Clientes', value: String(totalClients ?? 0), icon: '🏢', color: '#F97316' },
+        { label: 'Planes de Medios', value: String(mediaPlans.length), icon: '📅', color: '#EAB308' },
+        { label: 'Herramientas activas', value: '9', icon: '🛠', color: '#3B82F6' },
+        { label: 'Clientes activos', value: String(activeClients ?? 0), icon: '🟢', color: '#22C55E' },
+      ])
+
+      // Last 3 media plans for the recent section
+      const recent = mediaPlans
+        .sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0))
+        .slice(0, 3)
+      setRecentPlans(recent)
+    }
+
+    fetchStats()
+  }, [])
 
   return (
     <Layout>
@@ -108,6 +151,90 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* Planes recientes */}
+        {recentPlans.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <h2 style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#475569',
+              fontFamily: "'DM Mono', monospace",
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              marginBottom: 16,
+            }}>
+              Planes recientes
+            </h2>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}>
+              {recentPlans.map((plan, i) => (
+                <Link
+                  key={i}
+                  to="/plan-medios"
+                  style={{
+                    background: '#1a1a24',
+                    border: '1px solid #1e1e2e',
+                    borderRadius: 10,
+                    padding: '16px 20px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    transition: 'all 0.15s ease',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#D4A017'
+                    e.currentTarget.style.background = 'rgba(212,160,23,0.06)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#1e1e2e'
+                    e.currentTarget.style.background = '#1a1a24'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      fontSize: 20,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      background: 'rgba(212,160,23,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      📅
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#f8fafc' }}>
+                        {plan.clientName || plan.client || 'Sin nombre'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>
+                        {plan.date || plan.createdAt
+                          ? new Date(plan.date || plan.createdAt).toLocaleDateString('es-MX', {
+                              year: 'numeric', month: 'short', day: 'numeric',
+                            })
+                          : 'Sin fecha'}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    fontSize: 11,
+                    color: '#D4A017',
+                    fontFamily: "'DM Mono', monospace",
+                  }}>
+                    Ver plan →
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tools grid */}
         <div style={{ marginBottom: 16 }}>
