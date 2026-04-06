@@ -14,12 +14,17 @@ export function AuthProvider({ children }) {
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  async function fetchRole(userId) {
+  async function fetchRole(session) {
+    // 1. Try app_metadata (no RLS needed, set via admin API)
+    const metaRole = session?.user?.app_metadata?.role
+    if (metaRole) return metaRole
+
+    // 2. Fallback: try user_roles table
     try {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
+        .eq('user_id', session?.user?.id)
         .single()
       if (error) throw error
       return data?.role || 'viewer'
@@ -44,7 +49,7 @@ export function AuthProvider({ children }) {
       if (!mounted) return
       if (session?.user) {
         setUser(session.user)
-        const r = await fetchRole(session.user.id)
+        const r = await fetchRole(session)
         if (mounted) setRole(r)
       } else {
         setUser(null)
@@ -64,7 +69,7 @@ export function AuthProvider({ children }) {
       if (!mounted) return
       if (session?.user) {
         setUser(session.user)
-        const r = await fetchRole(session.user.id)
+        const r = await fetchRole(session)
         if (mounted) setRole(r)
       } else {
         setUser(null)
