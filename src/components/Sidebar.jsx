@@ -19,6 +19,7 @@ const navSections = [
       { path: '/auditoria', label: 'Auditoría Shopify', icon: '🛍' },
       { path: '/ads', label: 'Ads Reporter', icon: '📊' },
       { path: '/plan-medios', label: 'Plan de Medios', icon: '📅' },
+      { path: '/feedflow', label: 'FeedFlow', icon: '📲' },
     ]
   },
   {

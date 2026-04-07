@@ -15,6 +15,7 @@ import Brief from './pages/Brief'
 import BriefIA from './pages/BriefIA'
 import Propuesta from './pages/Propuesta'
 import PlanMedios from './pages/PlanMedios'
+import FeedFlow from './pages/FeedFlow'
 
 export default function App() {
   return (
@@ -71,6 +72,11 @@ export default function App() {
           <Route path="/plan-medios" element={
             <ProtectedRoute>
               <PlanMedios />
+            </ProtectedRoute>
+          } />
+          <Route path="/feedflow" element={
+            <ProtectedRoute>
+              <FeedFlow />
             </ProtectedRoute>
           } />
 
