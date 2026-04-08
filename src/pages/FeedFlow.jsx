@@ -94,10 +94,48 @@ export default function FeedFlow() {
     hora: '',
     etiquetas: [],
   })
+  const [uploadedImage, setUploadedImage] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [postImages, setPostImages] = useState({}) // { postId: dataUrl }
+
+  const handleImageFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setUploadedImage(e.target.result)
+      if (selectedPost) {
+        setPostImages(prev => ({ ...prev, [selectedPost.id]: e.target.result }))
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    handleImageFile(file)
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => setIsDragging(false)
+
+  const handleFileSelect = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = (e) => handleImageFile(e.target.files[0])
+    input.click()
+  }
 
   const openComposer = (post = null) => {
     if (post) {
       setSelectedPost(post)
+      setUploadedImage(postImages[post.id] || null)
       setComposerData({
         caption: post.caption,
         formato: post.type,
@@ -108,6 +146,7 @@ export default function FeedFlow() {
       })
     } else {
       setSelectedPost(null)
+      setUploadedImage(null)
       setComposerData({ caption: '', formato: 'Post', estado: 'Borrador', fecha: '', hora: '', etiquetas: [] })
     }
     setComposerOpen(true)
@@ -283,7 +322,7 @@ export default function FeedFlow() {
                 }}
               >
                 <div style={{
-                  height: 160, background: GRADIENTS[i % GRADIENTS.length],
+                  height: 160, background: postImages[post.id] ? `url(${postImages[post.id]}) center/cover no-repeat` : GRADIENTS[i % GRADIENTS.length],
                   position: 'relative', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end',
                   padding: 10,
                 }}>
@@ -569,28 +608,48 @@ export default function FeedFlow() {
           </div>
           {/* Body - two columns */}
           <div style={{ display: 'flex', gap: 0 }}>
-            {/* LEFT */}
+            {/* LEFT - Image Upload */}
             <div style={{
               flex: 1, padding: 24, borderRight: `1px solid ${COLORS.border}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300,
             }}>
-              {post ? (
-                <div style={{
+              <div
+                onClick={handleFileSelect}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                style={{
                   width: '100%', height: 280, borderRadius: 12,
-                  background: GRADIENTS[(post.id - 1) % GRADIENTS.length],
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>Vista previa</span>
-                </div>
-              ) : (
-                <div style={{
-                  width: '100%', height: 280, borderRadius: 12,
-                  border: `2px dashed ${COLORS.border}`,
+                  border: uploadedImage ? 'none' : `2px dashed ${isDragging ? COLORS.accent : COLORS.border}`,
+                  background: uploadedImage ? 'transparent' : (isDragging ? 'rgba(249,115,22,0.08)' : (post ? GRADIENTS[(post.id - 1) % GRADIENTS.length] : 'transparent')),
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}>
-                  <span style={{ fontSize: 32, color: COLORS.muted }}>&#8593;</span>
-                  <span style={{ color: COLORS.muted, fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>Arrastra una imagen o haz clic</span>
-                </div>
+                  cursor: 'pointer', transition: 'all 0.2s ease', overflow: 'hidden', position: 'relative',
+                }}
+              >
+                {uploadedImage ? (
+                  <img src={uploadedImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} />
+                ) : (
+                  <>
+                    <span style={{ fontSize: 36, color: isDragging ? COLORS.accent : 'rgba(255,255,255,0.5)' }}>📷</span>
+                    <span style={{ color: isDragging ? COLORS.accent : 'rgba(255,255,255,0.6)', fontSize: 14, fontFamily: 'DM Sans, sans-serif', textAlign: 'center', padding: '0 20px' }}>
+                      {isDragging ? 'Suelta la imagen aquí' : 'Arrastra una imagen o haz clic para subir'}
+                    </span>
+                  </>
+                )}
+              </div>
+              {uploadedImage && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setUploadedImage(null); if (selectedPost) setPostImages(prev => { const n = {...prev}; delete n[selectedPost.id]; return n }) }}
+                  style={{
+                    marginTop: 12, background: 'transparent', border: `1px solid ${COLORS.border}`,
+                    borderRadius: 8, padding: '6px 16px', color: COLORS.secondary, fontSize: 12,
+                    fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = COLORS.border; e.currentTarget.style.color = COLORS.secondary }}
+                >
+                  Eliminar imagen
+                </button>
               )}
             </div>
             {/* RIGHT */}
