@@ -74,7 +74,7 @@ const NETWORK_ICONS = {
   TikTok: '\u{1F3B5}',
 }
 
-const TABS = ['Marcas', 'Contenido', 'Calendario', 'Stories']
+const TABS = ['Marcas', 'Contenido', 'Calendario', 'Stories', 'Preview']
 
 export default function FeedFlow() {
   const [activeTab, setActiveTab] = useState('Marcas')
@@ -563,6 +563,222 @@ export default function FeedFlow() {
     </div>
   )
 
+  const [previewPost, setPreviewPost] = useState(null)
+
+  const renderPreview = () => {
+    const brand = selectedBrand || BRANDS[0]
+    const posts = MOKKA_POSTS
+
+    // Instagram post detail modal
+    const renderPostDetail = () => {
+      if (!previewPost) return null
+      const img = postImages[previewPost.id]
+      const gradient = GRADIENTS[(previewPost.id - 1) % GRADIENTS.length]
+      return (
+        <div
+          onClick={() => setPreviewPost(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1001, backdropFilter: 'blur(6px)',
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: 12, maxWidth: 500, width: '95%',
+            overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+          }}>
+            {/* IG Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: `linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 13, fontWeight: 700,
+              }}>{brand.initial}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>{brand.name.toLowerCase().replace(/\s/g, '')}</div>
+                <div style={{ fontSize: 11, color: '#8e8e8e' }}>{brand.desc}</div>
+              </div>
+              <div style={{ marginLeft: 'auto', color: '#262626', fontSize: 18, cursor: 'pointer' }}>⋯</div>
+            </div>
+            {/* Image */}
+            <div style={{
+              width: '100%', aspectRatio: '1',
+              background: img ? `url(${img}) center/cover` : gradient,
+            }} />
+            {/* Actions */}
+            <div style={{ padding: '10px 14px', display: 'flex', gap: 16, alignItems: 'center' }}>
+              <span style={{ fontSize: 22, cursor: 'pointer' }}>♡</span>
+              <span style={{ fontSize: 20, cursor: 'pointer' }}>💬</span>
+              <span style={{ fontSize: 20, cursor: 'pointer' }}>↗</span>
+              <span style={{ marginLeft: 'auto', fontSize: 20, cursor: 'pointer' }}>🔖</span>
+            </div>
+            {/* Likes */}
+            <div style={{ padding: '0 14px', fontSize: 13, fontWeight: 700, color: '#262626' }}>
+              128 Me gusta
+            </div>
+            {/* Caption */}
+            <div style={{ padding: '6px 14px 14px', fontSize: 13, color: '#262626', lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 700, marginRight: 6 }}>{brand.name.toLowerCase().replace(/\s/g, '')}</span>
+              {previewPost.caption}
+            </div>
+            {/* Date */}
+            <div style={{ padding: '0 14px 14px', fontSize: 10, color: '#8e8e8e', textTransform: 'uppercase' }}>
+              {previewPost.date} • {previewPost.status}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div>
+        <div style={{ marginBottom: 24 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, margin: 0, fontFamily: 'DM Sans, sans-serif' }}>Preview del Feed</h2>
+          <p style={{ color: COLORS.secondary, margin: '4px 0 0', fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>Así se verá tu perfil de Instagram</p>
+        </div>
+
+        {/* Instagram Phone Frame */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            width: 380, background: '#fff', borderRadius: 24,
+            border: `3px solid ${COLORS.border}`, overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            {/* Status bar */}
+            <div style={{
+              height: 28, background: '#fff', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#000',
+            }}>
+              9:41
+            </div>
+
+            {/* IG Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '6px 16px 10px', borderBottom: '1px solid #efefef',
+            }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: '#262626', fontFamily: 'DM Sans, sans-serif' }}>Instagram</span>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ fontSize: 18 }}>♡</span>
+                <span style={{ fontSize: 18 }}>💬</span>
+              </div>
+            </div>
+
+            {/* Stories row */}
+            <div style={{
+              display: 'flex', gap: 12, padding: '12px 16px', overflowX: 'auto',
+              borderBottom: '1px solid #efefef',
+            }}>
+              {/* Your story */}
+              <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  background: `linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)`,
+                  padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{
+                    width: 50, height: 50, borderRadius: '50%', background: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 18, fontWeight: 700, color: COLORS.accent,
+                  }}>{brand.initial}</div>
+                </div>
+                <div style={{ fontSize: 10, color: '#262626', marginTop: 4 }}>Tu historia</div>
+              </div>
+              {STORIES_DATA.slice(0, 4).map((s, i) => (
+                <div key={s.id} style={{ textAlign: 'center', flexShrink: 0 }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)',
+                    padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <div style={{
+                      width: 50, height: 50, borderRadius: '50%',
+                      background: GRADIENTS[(i + 3) % GRADIENTS.length],
+                    }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: '#262626', marginTop: 4, maxWidth: 56, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Profile Section */}
+            <div style={{ padding: '16px 16px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 12 }}>
+                <div style={{
+                  width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+                  background: `linear-gradient(135deg, ${brand.color}, ${brand.color}88)`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 28, fontWeight: 700, color: '#fff',
+                }}>{brand.initial}</div>
+                <div style={{ display: 'flex', gap: 20, flex: 1, justifyContent: 'center' }}>
+                  {[{ n: posts.length, l: 'Posts' }, { n: '2.4K', l: 'Seguidores' }, { n: '186', l: 'Siguiendo' }].map((s, i) => (
+                    <div key={i} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#262626' }}>{s.n}</div>
+                      <div style={{ fontSize: 12, color: '#8e8e8e' }}>{s.l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: 4 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#262626' }}>{brand.name}</div>
+                <div style={{ fontSize: 13, color: '#8e8e8e' }}>{brand.desc}</div>
+                <div style={{ fontSize: 13, color: '#262626', marginTop: 2 }}>☕ El mejor café de especialidad ✨</div>
+              </div>
+              <button style={{
+                width: '100%', padding: '6px 0', border: '1px solid #dbdbdb',
+                borderRadius: 8, background: '#fafafa', fontSize: 13,
+                fontWeight: 600, color: '#262626', cursor: 'pointer', marginTop: 8, marginBottom: 12,
+              }}>Editar perfil</button>
+            </div>
+
+            {/* Tab bar */}
+            <div style={{
+              display: 'flex', borderBottom: '1px solid #efefef',
+            }}>
+              <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderBottom: '2px solid #262626', fontSize: 16 }}>▦</div>
+              <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', color: '#8e8e8e', fontSize: 16 }}>▶</div>
+              <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', color: '#8e8e8e', fontSize: 16 }}>📌</div>
+            </div>
+
+            {/* Feed Grid 3x3 */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2,
+            }}>
+              {posts.map((post, i) => {
+                const img = postImages[post.id]
+                return (
+                  <div
+                    key={post.id}
+                    onClick={() => setPreviewPost(post)}
+                    style={{
+                      aspectRatio: '1', cursor: 'pointer',
+                      background: img ? `url(${img}) center/cover` : GRADIENTS[i % GRADIENTS.length],
+                      position: 'relative',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.querySelector('.overlay').style.opacity = 1 }}
+                    onMouseLeave={e => { e.currentTarget.querySelector('.overlay').style.opacity = 0 }}
+                  >
+                    <div className="overlay" style={{
+                      position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: 12, opacity: 0, transition: 'opacity 0.2s',
+                    }}>
+                      <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>♡ 128</span>
+                      <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>💬 24</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {renderPostDetail()}
+      </div>
+    )
+  }
+
   const renderComposer = () => {
     if (!composerOpen) return null
     const post = selectedPost
@@ -871,6 +1087,7 @@ export default function FeedFlow() {
         {activeTab === 'Contenido' && renderContenido()}
         {activeTab === 'Calendario' && renderCalendario()}
         {activeTab === 'Stories' && renderStories()}
+        {activeTab === 'Preview' && renderPreview()}
 
         {renderComposer()}
       </div>
