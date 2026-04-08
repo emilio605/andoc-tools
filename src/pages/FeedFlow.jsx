@@ -564,16 +564,42 @@ export default function FeedFlow() {
   )
 
   const [previewPost, setPreviewPost] = useState(null)
+  const [showPlanned, setShowPlanned] = useState(true)
+  const [hoveredPreviewPost, setHoveredPreviewPost] = useState(null)
+
+  // Existing published posts (simulated current feed)
+  const EXISTING_POSTS = [
+    { id: 'e1', caption: 'Nuestro espresso de especialidad, directo a tu taza. ☕', date: 'Mar 25/03', isExisting: true, likes: 234, comments: 18 },
+    { id: 'e2', caption: 'Nuevo horario: ahora abrimos a las 7:30 AM. ¡Los esperamos temprano! 🌅', date: 'Sáb 22/03', isExisting: true, likes: 187, comments: 32 },
+    { id: 'e3', caption: 'Torta de chocolate belga, hecha con amor cada mañana. 🍫', date: 'Mié 19/03', isExisting: true, likes: 312, comments: 45 },
+    { id: 'e4', caption: 'Feliz mes de la mujer. Hoy todas las bebidas con un 20% OFF 💜', date: 'Sáb 08/03', isExisting: true, likes: 456, comments: 67 },
+    { id: 'e5', caption: 'Latte art level: master. ¿Qué diseño quieres hoy? ✨', date: 'Lun 03/03', isExisting: true, likes: 198, comments: 22 },
+    { id: 'e6', caption: 'Viernes de croissants recién horneados 🥐', date: 'Vie 28/02', isExisting: true, likes: 267, comments: 38 },
+  ]
+
+  const EXISTING_GRADIENTS = [
+    'linear-gradient(135deg, #2D1B69, #1a1a2e)',
+    'linear-gradient(135deg, #1a3a2a, #0d1b2a)',
+    'linear-gradient(135deg, #3d1f00, #1a0a00)',
+    'linear-gradient(135deg, #2a0845, #1a1a2e)',
+    'linear-gradient(135deg, #1a2a3d, #0a1628)',
+    'linear-gradient(135deg, #3d2b00, #1a1500)',
+  ]
 
   const renderPreview = () => {
     const brand = selectedBrand || BRANDS[0]
-    const posts = MOKKA_POSTS
+    const plannedPosts = MOKKA_POSTS.map(p => ({ ...p, isExisting: false }))
+    const allPosts = showPlanned ? [...plannedPosts, ...EXISTING_POSTS] : [...EXISTING_POSTS]
+    const totalPosts = 48 + (showPlanned ? plannedPosts.length : 0) // simulated total
 
     // Instagram post detail modal
     const renderPostDetail = () => {
       if (!previewPost) return null
-      const img = postImages[previewPost.id]
-      const gradient = GRADIENTS[(previewPost.id - 1) % GRADIENTS.length]
+      const isNew = !previewPost.isExisting
+      const img = isNew ? postImages[previewPost.id] : null
+      const gradient = isNew
+        ? GRADIENTS[(previewPost.id - 1) % GRADIENTS.length]
+        : EXISTING_GRADIENTS[EXISTING_POSTS.findIndex(p => p.id === previewPost.id) % EXISTING_GRADIENTS.length]
       return (
         <div
           onClick={() => setPreviewPost(null)}
@@ -591,14 +617,19 @@ export default function FeedFlow() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%',
-                background: `linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)`,
+                background: 'linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontSize: 13, fontWeight: 700,
               }}>{brand.initial}</div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>{brand.name.toLowerCase().replace(/\s/g, '')}</div>
-                <div style={{ fontSize: 11, color: '#8e8e8e' }}>{brand.desc}</div>
               </div>
+              {isNew && (
+                <span style={{
+                  marginLeft: 8, background: '#F97316', color: '#fff', fontSize: 10,
+                  fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+                }}>NUEVO</span>
+              )}
               <div style={{ marginLeft: 'auto', color: '#262626', fontSize: 18, cursor: 'pointer' }}>⋯</div>
             </div>
             {/* Image */}
@@ -615,16 +646,16 @@ export default function FeedFlow() {
             </div>
             {/* Likes */}
             <div style={{ padding: '0 14px', fontSize: 13, fontWeight: 700, color: '#262626' }}>
-              128 Me gusta
+              {previewPost.likes || '—'} Me gusta
             </div>
             {/* Caption */}
             <div style={{ padding: '6px 14px 14px', fontSize: 13, color: '#262626', lineHeight: 1.5 }}>
               <span style={{ fontWeight: 700, marginRight: 6 }}>{brand.name.toLowerCase().replace(/\s/g, '')}</span>
               {previewPost.caption}
             </div>
-            {/* Date */}
+            {/* Date + Status */}
             <div style={{ padding: '0 14px 14px', fontSize: 10, color: '#8e8e8e', textTransform: 'uppercase' }}>
-              {previewPost.date} • {previewPost.status}
+              {previewPost.date} {previewPost.status ? `• ${previewPost.status}` : ''}
             </div>
           </div>
         </div>
@@ -633,32 +664,74 @@ export default function FeedFlow() {
 
     return (
       <div>
-        <div style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, margin: 0, fontFamily: 'DM Sans, sans-serif' }}>Preview del Feed</h2>
-          <p style={{ color: COLORS.secondary, margin: '4px 0 0', fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>Así se verá tu perfil de Instagram</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, margin: 0, fontFamily: 'DM Sans, sans-serif' }}>Preview del Feed</h2>
+            <p style={{ color: COLORS.secondary, margin: '4px 0 0', fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>
+              Posts actuales + programados de abril
+            </p>
+          </div>
+          {/* Toggle */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            background: COLORS.card, border: `1px solid ${COLORS.border}`,
+            borderRadius: 10, padding: '8px 16px',
+          }}>
+            <span style={{ fontSize: 13, color: COLORS.secondary, fontFamily: 'DM Sans, sans-serif' }}>Mostrar programados</span>
+            <div
+              onClick={() => setShowPlanned(!showPlanned)}
+              style={{
+                width: 44, height: 24, borderRadius: 12, cursor: 'pointer',
+                background: showPlanned ? COLORS.accent : COLORS.border,
+                position: 'relative', transition: 'background 0.2s',
+              }}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%', background: '#fff',
+                position: 'absolute', top: 3,
+                left: showPlanned ? 23 : 3,
+                transition: 'left 0.2s',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: 20, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#8e8e8e' }} />
+            <span style={{ fontSize: 12, color: COLORS.secondary, fontFamily: 'DM Sans, sans-serif' }}>Publicado ({EXISTING_POSTS.length})</span>
+          </div>
+          {showPlanned && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: COLORS.accent }} />
+              <span style={{ fontSize: 12, color: COLORS.secondary, fontFamily: 'DM Sans, sans-serif' }}>Programado abril ({MOKKA_POSTS.length})</span>
+            </div>
+          )}
         </div>
 
         {/* Instagram Phone Frame */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <div style={{
             width: 380, background: '#fff', borderRadius: 24,
-            border: `3px solid ${COLORS.border}`, overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            border: '3px solid #333', overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
           }}>
             {/* Status bar */}
             <div style={{
               height: 28, background: '#fff', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#000',
-            }}>
-              9:41
-            </div>
+            }}>9:41</div>
 
             {/* IG Header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '6px 16px 10px', borderBottom: '1px solid #efefef',
             }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#262626', fontFamily: 'DM Sans, sans-serif' }}>Instagram</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: '#262626', fontFamily: 'DM Sans, sans-serif' }}>
+                {brand.name.toLowerCase().replace(/\s/g, '')}
+              </span>
               <div style={{ display: 'flex', gap: 16 }}>
                 <span style={{ fontSize: 18 }}>♡</span>
                 <span style={{ fontSize: 18 }}>💬</span>
@@ -670,11 +743,10 @@ export default function FeedFlow() {
               display: 'flex', gap: 12, padding: '12px 16px', overflowX: 'auto',
               borderBottom: '1px solid #efefef',
             }}>
-              {/* Your story */}
               <div style={{ textAlign: 'center', flexShrink: 0 }}>
                 <div style={{
                   width: 56, height: 56, borderRadius: '50%',
-                  background: `linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)`,
+                  background: 'linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)',
                   padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <div style={{
@@ -692,10 +764,7 @@ export default function FeedFlow() {
                     background: 'linear-gradient(135deg, #F58529, #DD2A7B, #8134AF)',
                     padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <div style={{
-                      width: 50, height: 50, borderRadius: '50%',
-                      background: GRADIENTS[(i + 3) % GRADIENTS.length],
-                    }} />
+                    <div style={{ width: 50, height: 50, borderRadius: '50%', background: GRADIENTS[(i + 3) % GRADIENTS.length] }} />
                   </div>
                   <div style={{ fontSize: 10, color: '#262626', marginTop: 4, maxWidth: 56, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</div>
                 </div>
@@ -712,7 +781,7 @@ export default function FeedFlow() {
                   fontSize: 28, fontWeight: 700, color: '#fff',
                 }}>{brand.initial}</div>
                 <div style={{ display: 'flex', gap: 20, flex: 1, justifyContent: 'center' }}>
-                  {[{ n: posts.length, l: 'Posts' }, { n: '2.4K', l: 'Seguidores' }, { n: '186', l: 'Siguiendo' }].map((s, i) => (
+                  {[{ n: totalPosts, l: 'Posts' }, { n: '2.4K', l: 'Seguidores' }, { n: '186', l: 'Siguiendo' }].map((s, i) => (
                     <div key={i} style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#262626' }}>{s.n}</div>
                       <div style={{ fontSize: 12, color: '#8e8e8e' }}>{s.l}</div>
@@ -733,40 +802,55 @@ export default function FeedFlow() {
             </div>
 
             {/* Tab bar */}
-            <div style={{
-              display: 'flex', borderBottom: '1px solid #efefef',
-            }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #efefef' }}>
               <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderBottom: '2px solid #262626', fontSize: 16 }}>▦</div>
               <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', color: '#8e8e8e', fontSize: 16 }}>▶</div>
               <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', color: '#8e8e8e', fontSize: 16 }}>📌</div>
             </div>
 
-            {/* Feed Grid 3x3 */}
+            {/* Feed Grid 3x3 - Planned first, then existing */}
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2,
             }}>
-              {posts.map((post, i) => {
-                const img = postImages[post.id]
+              {allPosts.map((post, i) => {
+                const isNew = !post.isExisting
+                const img = isNew ? postImages[post.id] : null
+                const gradient = isNew
+                  ? GRADIENTS[(post.id - 1) % GRADIENTS.length]
+                  : EXISTING_GRADIENTS[EXISTING_POSTS.findIndex(p => p.id === post.id) % EXISTING_GRADIENTS.length]
+                const isHov = hoveredPreviewPost === (post.id + (isNew ? '' : '_e'))
                 return (
                   <div
-                    key={post.id}
+                    key={post.id + (isNew ? '' : '_e')}
                     onClick={() => setPreviewPost(post)}
+                    onMouseEnter={() => setHoveredPreviewPost(post.id + (isNew ? '' : '_e'))}
+                    onMouseLeave={() => setHoveredPreviewPost(null)}
                     style={{
                       aspectRatio: '1', cursor: 'pointer',
-                      background: img ? `url(${img}) center/cover` : GRADIENTS[i % GRADIENTS.length],
-                      position: 'relative',
+                      background: img ? `url(${img}) center/cover` : gradient,
+                      position: 'relative', overflow: 'hidden',
                     }}
-                    onMouseEnter={e => { e.currentTarget.querySelector('.overlay').style.opacity = 1 }}
-                    onMouseLeave={e => { e.currentTarget.querySelector('.overlay').style.opacity = 0 }}
                   >
-                    <div className="overlay" style={{
-                      position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      gap: 12, opacity: 0, transition: 'opacity 0.2s',
-                    }}>
-                      <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>♡ 128</span>
-                      <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>💬 24</span>
-                    </div>
+                    {/* New post indicator */}
+                    {isNew && (
+                      <div style={{
+                        position: 'absolute', top: 4, left: 4, zIndex: 2,
+                        width: 8, height: 8, borderRadius: '50%',
+                        background: COLORS.accent, border: '1.5px solid #fff',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                      }} />
+                    )}
+                    {/* Hover overlay */}
+                    {isHov && (
+                      <div style={{
+                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        gap: 8,
+                      }}>
+                        <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>♡ {post.likes || '—'}</span>
+                        <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>💬 {post.comments || '—'}</span>
+                      </div>
+                    )}
                   </div>
                 )
               })}
