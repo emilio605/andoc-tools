@@ -3,9 +3,20 @@
 // ============================================================
 // PARTE 1: Color Filter Swatches (páginas de colección)
 // PARTE 2: Variant Buttons — Talla y Color (página de producto)
-// ============================================================
-// Pegar entre <script> y </script> justo antes de </body>
-// en layout/theme.liquid
+//
+// Estructura real del tema Platform (Groupthought):
+//   <component-custom-select class="custom-select">
+//     <button class="custom-select__button" role="combobox">...</button>
+//     <fieldset>
+//       <legend class="visually-hidden">Talla</legend>
+//       <ul class="custom-select__dropdown product-variant-selectors__option-list">
+//         <li class="product-variant-selectors__option-list-item">
+//           <input type="radio" name="options[Talla]-..." value="34">
+//           <label>34</label>
+//         </li>
+//       </ul>
+//     </fieldset>
+//   </component-custom-select>
 // ============================================================
 
 // ── PARTE 1: Color Filter Swatches en colección ─────────────
@@ -13,145 +24,85 @@
 (function () {
   'use strict';
 
-  var COLOR_FALLBACK = {
-    'ambar': '#C9A534', 'azul': '#1E3A8A', 'crema': '#F5EDD6',
-    'dorado': '#D4AF37', 'negro': '#1C1C1C', 'nude': '#D4A491',
-    'plateado': '#B0B0B0', 'rojo': '#C0272D', 'rosado': '#F4B8C1',
-    'print': null,
-  };
+  var CF = { 'ambar':'#C9A534','azul':'#1E3A8A','crema':'#F5EDD6','dorado':'#D4AF37','negro':'#1C1C1C','nude':'#D4A491','plateado':'#B0B0B0','rojo':'#C0272D','rosado':'#F4B8C1','print':null };
+  var ci = {}, dr = false;
 
-  var colorImages = {};
-  var dataReady   = false;
-  var STYLE_ID    = 'cs-filter-style';
+  function nk(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+  function th(s) { return s.replace(/(\.(jpe?g|png|gif|webp|avif))(\?.*)?$/i,'_80x$1$3'); }
+  function gh() { var m=window.location.pathname.match(/\/collections\/([^\/\?#]+)/); return m?m[1]:null; }
 
-  function normalizeKey(str) {
-    return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-  }
-
-  function shopifyThumb(src) {
-    return src.replace(/(\.(jpe?g|png|gif|webp|avif))(\?.*)?$/i, '_80x$1$3');
-  }
-
-  function getCollectionHandle() {
-    var m = window.location.pathname.match(/\/collections\/([^\/\?#]+)/);
-    return m ? m[1] : null;
-  }
-
-  function loadFilterData(callback) {
-    if (dataReady) { callback(); return; }
-    var handle = getCollectionHandle();
-    if (!handle) { dataReady = true; callback(); return; }
-
-    fetch('/collections/' + encodeURIComponent(handle) + '/products.json?limit=250')
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        (data.products || []).forEach(function (product) {
-          var colorIdx = -1;
-          (product.options || []).forEach(function (opt, i) {
-            if (/colou?r/i.test(opt)) colorIdx = i;
+  function ldF(cb) {
+    if (dr) { cb(); return; }
+    var h = gh(); if (!h) { dr=true; cb(); return; }
+    fetch('/collections/'+encodeURIComponent(h)+'/products.json?limit=250')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        (d.products||[]).forEach(function(p){
+          var ix=-1;
+          (p.options||[]).forEach(function(o,i){if(/colou?r/i.test(o))ix=i;});
+          if(ix<0)return;
+          var ck=[];
+          (p.variants||[]).forEach(function(v){
+            var val=v['option'+(ix+1)]; if(!val)return;
+            var k=nk(val);
+            if(!ci[k]&&v.featured_image&&v.featured_image.src) ci[k]=th(v.featured_image.src);
+            if(ck.indexOf(k)===-1) ck.push(k);
           });
-          if (colorIdx < 0) return;
-
-          var productColorKeys = [];
-          (product.variants || []).forEach(function (variant) {
-            var val = variant['option' + (colorIdx + 1)];
-            if (!val) return;
-            var key = normalizeKey(val);
-            if (!colorImages[key] && variant.featured_image && variant.featured_image.src) {
-              colorImages[key] = shopifyThumb(variant.featured_image.src);
-            }
-            if (productColorKeys.indexOf(key) === -1) productColorKeys.push(key);
-          });
-
-          // Fallback: producto de un solo color → primera imagen del producto
-          if (productColorKeys.length === 1 && !colorImages[productColorKeys[0]] &&
-              product.images && product.images.length > 0) {
-            colorImages[productColorKeys[0]] = shopifyThumb(product.images[0].src);
-          }
+          if(ck.length===1&&!ci[ck[0]]&&p.images&&p.images[0]) ci[ck[0]]=th(p.images[0].src);
         });
-        dataReady = true;
-        callback();
-      })
-      .catch(function () { dataReady = true; callback(); });
+        dr=true; cb();
+      }).catch(function(){dr=true; cb();});
   }
 
-  function injectFilterStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    var s = document.createElement('style');
-    s.id = STYLE_ID;
-    s.textContent = '.cs-fswatch{display:inline-block;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.15);margin-right:8px;vertical-align:middle;flex-shrink:0;position:relative;top:-1px;background-size:cover;background-position:center;overflow:hidden;}';
+  function isF() {
+    if(document.getElementById('cs-fs'))return;
+    var s=document.createElement('style'); s.id='cs-fs';
+    s.textContent='.cs-fsw{display:inline-block;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,0,0,.15);margin-right:8px;vertical-align:middle;flex-shrink:0;position:relative;top:-1px;background-size:cover;background-position:center;overflow:hidden;}';
     document.head.appendChild(s);
   }
 
-  function findColorFilterInputs() {
-    // Estrategia 1: input con "color" en el name
-    var byName = Array.from(document.querySelectorAll(
-      'input[name*="color" i][type="checkbox"], input[name*="colour" i][type="checkbox"]'
-    ));
-    if (byName.length > 0) return byName;
-
-    // Estrategia 2: sección cuyo encabezado sea exactamente "Color"
-    var sections = document.querySelectorAll('details, [class*="filter"], [class*="facet"], [class*="accordion"]');
-    for (var i = 0; i < sections.length; i++) {
-      var heading = sections[i].querySelector('summary, button, h2, h3, h4, [class*="heading"], [class*="title"]');
-      if (heading && /^color$/i.test(heading.textContent.trim())) {
-        var inputs = Array.from(sections[i].querySelectorAll('input[type="checkbox"]'));
-        if (inputs.length > 0) return inputs;
+  function fiF() {
+    var r=Array.from(document.querySelectorAll('input[name*="color" i][type="checkbox"],input[name*="colour" i][type="checkbox"]'));
+    if(r.length>0)return r;
+    var ss=document.querySelectorAll('details,[class*="filter"],[class*="facet"],[class*="accordion"]');
+    for(var i=0;i<ss.length;i++){
+      var hh=ss[i].querySelector('summary,button,h2,h3,h4,[class*="heading"],[class*="title"]');
+      if(hh&&/^color$/i.test(hh.textContent.trim())){
+        var ii=Array.from(ss[i].querySelectorAll('input[type="checkbox"]'));
+        if(ii.length>0)return ii;
       }
     }
     return [];
   }
 
-  function addFilterSwatches() {
-    var inputs = findColorFilterInputs();
-    inputs.forEach(function (input) {
-      var label = input.id
-        ? document.querySelector('label[for="' + input.id + '"]')
-        : input.closest('label');
-      if (!label || label.querySelector('.cs-fswatch')) return;
-
-      var rawValue = (input.value || '').trim();
-      var key = /^gid:|^\d+$/.test(rawValue)
-        ? normalizeKey(label.textContent.replace(/\s*\d+\s*$/, '').trim())
-        : normalizeKey(rawValue);
-      if (!key) return;
-
-      var imgSrc = colorImages[key];
-      var fallback = COLOR_FALLBACK[key];
-      if (!imgSrc && fallback === undefined) return;
-
-      var swatch = document.createElement('span');
-      swatch.className = 'cs-fswatch';
-      swatch.setAttribute('aria-hidden', 'true');
-
-      if (imgSrc) {
-        swatch.style.backgroundImage = 'url(' + imgSrc + ')';
-      } else if (fallback) {
-        swatch.style.backgroundColor = fallback;
-      } else {
-        swatch.style.background = 'repeating-linear-gradient(45deg,#c0392b 0px 3px,#fff 3px 6px,#2980b9 6px 9px,#fff 9px 12px)';
-      }
-
-      var inputInLabel = label.querySelector('input');
-      if (inputInLabel && inputInLabel.nextSibling) {
-        label.insertBefore(swatch, inputInLabel.nextSibling);
-      } else {
-        label.insertBefore(swatch, label.firstChild);
-      }
+  function asF() {
+    fiF().forEach(function(inp){
+      var lbl=inp.id?document.querySelector('label[for="'+inp.id+'"]'):inp.closest('label');
+      if(!lbl||lbl.querySelector('.cs-fsw'))return;
+      var rv=(inp.value||'').trim();
+      var k=/^gid:|^\d+$/.test(rv)?nk(lbl.textContent.replace(/\s*\d+\s*$/,'').trim()):nk(rv);
+      if(!k)return;
+      var img=ci[k],fb=CF[k];
+      if(!img&&fb===undefined)return;
+      var sw=document.createElement('span'); sw.className='cs-fsw'; sw.setAttribute('aria-hidden','true');
+      if(img) sw.style.backgroundImage='url('+img+')';
+      else if(fb) sw.style.backgroundColor=fb;
+      else sw.style.background='repeating-linear-gradient(45deg,#c0392b 0px 3px,#fff 3px 6px,#2980b9 6px 9px,#fff 9px 12px)';
+      var il=lbl.querySelector('input');
+      if(il&&il.nextSibling) lbl.insertBefore(sw,il.nextSibling); else lbl.insertBefore(sw,lbl.firstChild);
     });
   }
 
   function initFilter() {
-    injectFilterStyles();
-    loadFilterData(function () { addFilterSwatches(); });
-    new MutationObserver(function (mutations) {
-      if (!mutations.some(function (m) { return m.addedNodes.length > 0; })) return;
-      if (dataReady) addFilterSwatches();
-      else loadFilterData(function () { addFilterSwatches(); });
-    }).observe(document.body, { childList: true, subtree: true });
+    isF();
+    ldF(function(){asF();});
+    new MutationObserver(function(m){
+      if(!m.some(function(x){return x.addedNodes.length>0;}))return;
+      if(dr) asF(); else ldF(function(){asF();});
+    }).observe(document.body,{childList:true,subtree:true});
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFilter);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initFilter);
   else initFilter();
 })();
 
@@ -163,207 +114,160 @@
 
   var BRAND_COLOR = '#C41670';
 
-  var COLOR_FALLBACK = {
-    'ambar': '#C9A534', 'azul': '#1E3A8A', 'crema': '#F5EDD6',
-    'dorado': '#D4AF37', 'negro': '#1C1C1C', 'nude': '#D4A491',
-    'plateado': '#B0B0B0', 'rojo': '#C0272D', 'rosado': '#F4B8C1',
-    'print': null,
-  };
+  var CF = { 'ambar':'#C9A534','azul':'#1E3A8A','crema':'#F5EDD6','dorado':'#D4AF37','negro':'#1C1C1C','nude':'#D4A491','plateado':'#B0B0B0','rojo':'#C0272D','rosado':'#F4B8C1','print':null };
+  var ci = {};
+  var STYLE_ID = 'cs-vs';
 
-  var colorImages = {};
-  var STYLE_ID = 'cs-variant-style';
+  function nk(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+  function th(s) { return s.replace(/(\.(jpe?g|png|gif|webp|avif))(\?.*)?$/i,'_80x$1$3'); }
+  function gph() { var m=window.location.pathname.match(/\/products\/([^\/\?#]+)/); return m?m[1]:null; }
 
-  function normalizeKey(str) {
-    return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-  }
-
-  function shopifyThumb(src) {
-    return src.replace(/(\.(jpe?g|png|gif|webp|avif))(\?.*)?$/i, '_80x$1$3');
-  }
-
-  function getProductHandle() {
-    var m = window.location.pathname.match(/\/products\/([^\/\?#]+)/);
-    return m ? m[1] : null;
-  }
-
-  function loadProductImages(handle, callback) {
-    fetch('/products/' + encodeURIComponent(handle) + '.json')
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        var product = data.product || {};
-        var colorIdx = -1;
-        (product.options || []).forEach(function (opt, i) {
-          if (/colou?r/i.test(opt.name || opt)) colorIdx = i;
-        });
-        if (colorIdx >= 0) {
-          (product.variants || []).forEach(function (v) {
-            var val = v['option' + (colorIdx + 1)];
-            if (!val) return;
-            var key = normalizeKey(val);
-            if (!colorImages[key] && v.featured_image && v.featured_image.src)
-              colorImages[key] = shopifyThumb(v.featured_image.src);
+  function lpi(handle, cb) {
+    fetch('/products/'+encodeURIComponent(handle)+'.json')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var p=d.product||{}, ix=-1;
+        (p.options||[]).forEach(function(o,i){if(/colou?r/i.test(o.name||o))ix=i;});
+        if(ix>=0){
+          (p.variants||[]).forEach(function(v){
+            var val=v['option'+(ix+1)]; if(!val)return;
+            var k=nk(val);
+            if(!ci[k]&&v.featured_image&&v.featured_image.src) ci[k]=th(v.featured_image.src);
           });
-          var uc = [];
-          (product.variants || []).forEach(function (v) {
-            var k = v['option' + (colorIdx + 1)]; k = k ? normalizeKey(k) : null;
-            if (k && uc.indexOf(k) === -1) uc.push(k);
+          var uc=[];
+          (p.variants||[]).forEach(function(v){
+            var k=v['option'+(ix+1)]; k=k?nk(k):null;
+            if(k&&uc.indexOf(k)===-1) uc.push(k);
           });
-          if (uc.length === 1 && !colorImages[uc[0]] && product.images && product.images[0])
-            colorImages[uc[0]] = shopifyThumb(product.images[0].src);
+          if(uc.length===1&&!ci[uc[0]]&&p.images&&p.images[0]) ci[uc[0]]=th(p.images[0].src);
         }
-        callback();
-      })
-      .catch(function () { callback(); });
+        cb();
+      }).catch(function(){cb();});
   }
 
-  function injectVariantStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    var s = document.createElement('style');
-    s.id = STYLE_ID;
-    s.textContent = [
-      '.cs-opt-label{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;display:block;}',
-      '.cs-opt-label span{font-weight:400;text-transform:none;}',
-      '.cs-variant-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}',
-      // Botón talla
-      '.cs-size-btn{cursor:pointer;background:#fff;color:#1c1c1c;border:1.5px solid #d0d0d0;border-radius:4px;padding:8px 14px;font-size:14px;font-family:inherit;line-height:1;min-width:44px;text-align:center;transition:border-color .15s,background .15s,color .15s;}',
-      '.cs-size-btn:hover:not(:disabled){border-color:#888;}',
-      '.cs-size-btn.cs-sel{border-color:' + BRAND_COLOR + ';background:' + BRAND_COLOR + ';color:#fff;font-weight:600;}',
-      '.cs-size-btn:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed;}',
-      // Botón color
-      '.cs-color-btn{cursor:pointer;background:none;border:2px solid #d0d0d0;border-radius:50%;padding:3px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}',
-      '.cs-color-btn:hover:not(:disabled){border-color:#888;}',
-      '.cs-color-btn.cs-sel{border-color:#1c1c1c;border-width:2.5px;}',
-      '.cs-color-btn:disabled{opacity:.35;cursor:not-allowed;}',
-      '.cs-color-swatch{display:block;width:34px;height:34px;border-radius:50%;background-size:cover;background-position:center;border:1px solid rgba(0,0,0,0.1);}',
-    ].join('\n');
+  function ivs() {
+    if(document.getElementById(STYLE_ID))return;
+    var s=document.createElement('style'); s.id=STYLE_ID;
+    s.textContent=[
+      '.cs-ol{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;display:block;}',
+      '.cs-ol span{font-weight:400;text-transform:none;}',
+      '.cs-vb{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}',
+      '.cs-sb{cursor:pointer;background:#fff;color:#1c1c1c;border:1.5px solid #d0d0d0;border-radius:4px;padding:8px 14px;font-size:14px;font-family:inherit;line-height:1;min-width:44px;text-align:center;transition:border-color .15s,background .15s,color .15s;}',
+      '.cs-sb:hover:not(:disabled){border-color:#888;}',
+      '.cs-sb.cs-s{border-color:'+BRAND_COLOR+';background:'+BRAND_COLOR+';color:#fff;font-weight:600;}',
+      '.cs-sb:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed;}',
+      '.cs-cb{cursor:pointer;background:none;border:2px solid #d0d0d0;border-radius:50%;padding:3px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}',
+      '.cs-cb:hover:not(:disabled){border-color:#888;}',
+      '.cs-cb.cs-s{border-color:#1c1c1c;border-width:2.5px;}',
+      '.cs-cb:disabled{opacity:.35;cursor:not-allowed;}',
+      '.cs-csw{display:block;width:34px;height:34px;border-radius:50%;background-size:cover;background-position:center;border:1px solid rgba(0,0,0,.1);}',
+    ].join('');
     document.head.appendChild(s);
   }
 
-  function replaceSelect(select, type, labelEl, selectContainer) {
-    if (select.dataset.csReplaced) return;
-    select.dataset.csReplaced = '1';
+  function processComp(comp) {
+    if (comp.dataset.csr) return;
+    comp.dataset.csr = '1';
 
-    var origLabel = labelEl ? labelEl.textContent.trim() : (type === 'color' ? 'Color' : 'Talla');
+    // Obtener nombre de opción desde el legend
+    var legend = comp.querySelector('legend');
+    var optionName = legend ? legend.textContent.trim() : '';
+    var isTalla = /talla|size|taille/i.test(optionName);
+    var isColor = /colou?r/i.test(optionName);
+    if (!isTalla && !isColor) return;
 
-    // Label dinámico "Talla: 36" / "Color: Crema"
+    // Radio inputs y botón combobox visible
+    var radios = Array.from(comp.querySelectorAll('input[type="radio"]'));
+    if (radios.length === 0) return;
+    var comboBtn = comp.querySelector('.custom-select__button');
+
+    // Label dinámico "Talla: 35"
     var dynLabel = document.createElement('span');
-    dynLabel.className = 'cs-opt-label';
-    function updateLabel(val) {
-      dynLabel.innerHTML = origLabel + ': <span>' + val + '</span>';
-    }
-    var currentVal = select.options[select.selectedIndex] ? select.options[select.selectedIndex].value : '';
-    updateLabel(currentVal);
+    dynLabel.className = 'cs-ol';
+    var checked = comp.querySelector('input[type="radio"]:checked');
+    var currentVal = checked ? checked.value : (radios[0] ? radios[0].value : '');
+    function ul(v) { dynLabel.innerHTML = optionName + ': <span>' + v + '</span>'; }
+    ul(currentVal);
 
-    // Ocultar label original y el contenedor del select (incluye el SVG de la flecha)
-    if (labelEl) labelEl.style.display = 'none';
-    var hideTarget = selectContainer || select;
-    hideTarget.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
-
-    // Crear botones
+    // Contenedor de botones
     var container = document.createElement('div');
-    container.className = 'cs-variant-btns';
+    container.className = 'cs-vb';
 
-    Array.from(select.options).forEach(function (option) {
+    radios.forEach(function(radio) {
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.dataset.value = option.value;
+      btn.dataset.value = radio.value;
 
-      if (type === 'color') {
-        btn.className = 'cs-color-btn';
-        btn.title = option.value;
-        var key = normalizeKey(option.value);
+      if (isColor) {
+        btn.className = 'cs-cb';
+        btn.title = radio.value;
+        var k = nk(radio.value);
         var sw = document.createElement('span');
-        sw.className = 'cs-color-swatch';
-        if (colorImages[key])           sw.style.backgroundImage = 'url(' + colorImages[key] + ')';
-        else if (COLOR_FALLBACK[key])   sw.style.backgroundColor = COLOR_FALLBACK[key];
-        else if (COLOR_FALLBACK[key] === null)
-          sw.style.background = 'repeating-linear-gradient(45deg,#c0392b 0px 3px,#fff 3px 6px,#2980b9 6px 9px,#fff 9px 12px)';
+        sw.className = 'cs-csw';
+        if (ci[k])            sw.style.backgroundImage = 'url('+ci[k]+')';
+        else if (CF[k])       sw.style.backgroundColor = CF[k];
+        else if (CF[k]===null) sw.style.background = 'repeating-linear-gradient(45deg,#c0392b 0px 3px,#fff 3px 6px,#2980b9 6px 9px,#fff 9px 12px)';
         btn.appendChild(sw);
       } else {
-        btn.className = 'cs-size-btn';
-        btn.textContent = option.value;
+        btn.className = 'cs-sb';
+        btn.textContent = radio.value;
       }
 
-      if (option.disabled) btn.disabled = true;
-      if (option.selected) btn.classList.add('cs-sel');
+      if (radio.disabled) btn.disabled = true;
+      if (radio.checked)  btn.classList.add('cs-s');
 
-      btn.addEventListener('click', function () {
-        container.querySelectorAll('button').forEach(function (b) { b.classList.remove('cs-sel'); });
-        btn.classList.add('cs-sel');
-        updateLabel(option.value);
-        select.value = option.value;
-        // Platform theme escucha el evento "change" en el select
-        select.dispatchEvent(new Event('change', { bubbles: true }));
+      btn.addEventListener('click', function() {
+        container.querySelectorAll('button').forEach(function(b){b.classList.remove('cs-s');});
+        btn.classList.add('cs-s');
+        ul(radio.value);
+        // Marcar el radio y disparar el evento que usa el tema
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+        // Actualizar el span data-selected-value del botón combobox (por si el tema lo lee)
+        if (comboBtn) {
+          var sv = comboBtn.querySelector('[data-selected-value]');
+          if (sv) sv.textContent = radio.value;
+        }
       });
 
       container.appendChild(btn);
     });
 
-    // Insertar: dynLabel + botones antes del contenedor oculto
-    hideTarget.parentNode.insertBefore(dynLabel, hideTarget);
-    hideTarget.parentNode.insertBefore(container, hideTarget);
+    // Ocultar el botón combobox (la flecha dropdown visible)
+    if (comboBtn) comboBtn.style.display = 'none';
 
-    // Sincronizar si el select cambia desde el tema (ej. URL con variante)
-    select.addEventListener('change', function () {
-      updateLabel(select.value);
-      container.querySelectorAll('button').forEach(function (b) {
-        b.classList.toggle('cs-sel', b.dataset.value === select.value);
+    // Insertar label + botones al inicio del componente
+    comp.insertBefore(container, comp.firstChild);
+    comp.insertBefore(dynLabel, comp.firstChild);
+
+    // Sincronizar si el radio cambia externamente (URL con variante)
+    radios.forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (radio.checked) {
+          ul(radio.value);
+          container.querySelectorAll('button').forEach(function(b){
+            b.classList.toggle('cs-s', b.dataset.value === radio.value);
+          });
+        }
       });
     });
   }
 
-  function processProductSelects() {
-    // Platform theme: variant-selects contiene los selects de opciones
-    // Cada opción está en un wrapper con el select y un SVG (la flecha del dropdown)
-    var selects = document.querySelectorAll(
-      'variant-selects select[name^="options"], ' +
-      '.product-form__input select[name^="options"], ' +
-      'select[name^="options["]'
-    );
-
-    selects.forEach(function (select) {
-      if (select.dataset.csReplaced) return;
-
-      // Encontrar el wrapper (.product-form__input o similar) y el label
-      var wrapper       = select.closest('.product-form__input') ||
-                          select.closest('[class*="variant-input"]') ||
-                          select.parentElement.parentElement;
-      var labelEl       = wrapper ? wrapper.querySelector('label, legend, .form__label') : null;
-      var selectWrapper = select.closest('.select') || select.parentElement; // div con select + SVG
-
-      var nameTxt  = (select.getAttribute('name') || '').toLowerCase();
-      var labelTxt = labelEl ? labelEl.textContent.toLowerCase().trim() : '';
-      var optionName = '';
-
-      // Platform puede tener data-option-name en el wrapper padre
-      var outerWrapper = select.closest('[data-option-name]');
-      if (outerWrapper) optionName = outerWrapper.getAttribute('data-option-name').toLowerCase();
-
-      var isTalla = /talla|size|taille/i.test(nameTxt) || /talla|size/i.test(labelTxt) || /talla|size/i.test(optionName);
-      var isColor = /colou?r/i.test(nameTxt) || /^color/i.test(labelTxt) || /colou?r/i.test(optionName);
-
-      if (isTalla)      replaceSelect(select, 'size',  labelEl, selectWrapper);
-      else if (isColor) replaceSelect(select, 'color', labelEl, selectWrapper);
+  function pps() {
+    document.querySelectorAll('component-custom-select').forEach(function(comp) {
+      processComp(comp);
     });
   }
 
-  function initVariants() {
-    var handle = getProductHandle();
-    if (!handle) return;
-
-    injectVariantStyles();
-
-    loadProductImages(handle, function () {
-      processProductSelects();
-    });
-
-    // MutationObserver: Platform carga el form como módulo ES, puede tardar
-    new MutationObserver(function (mutations) {
-      if (mutations.some(function (m) { return m.addedNodes.length > 0; }))
-        processProductSelects();
-    }).observe(document.body, { childList: true, subtree: true });
+  function init() {
+    var h = gph(); if (!h) return;
+    ivs();
+    lpi(h, function() { pps(); });
+    new MutationObserver(function(m){
+      if(m.some(function(x){return x.addedNodes.length>0;})) pps();
+    }).observe(document.body, {childList:true, subtree:true});
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initVariants);
-  else initVariants();
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
 })();
