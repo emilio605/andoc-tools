@@ -16,6 +16,7 @@ import BriefIA from './pages/BriefIA'
 import Propuesta from './pages/Propuesta'
 import PlanMedios from './pages/PlanMedios'
 import FeedFlow from './pages/FeedFlow'
+import Apartment3D from './pages/Apartment3D'
 
 export default function App() {
   return (
@@ -93,6 +94,9 @@ export default function App() {
               <Equipo />
             </ProtectedRoute>
           } />
+
+          {/* Departamento 3D — public, no auth */}
+          <Route path="/apartment3d" element={<Apartment3D />} />
 
           {/* Catch-all → dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
