@@ -10,19 +10,12 @@
  *    <script>
  *      // [pegar todo el contenido de este archivo aquí]
  *    </script>
- *
- * CÓMO FUNCIONA:
- * - Lee los productos de la colección actual via /collections/{handle}/products.json
- * - Por cada producto, busca la imagen asignada a cada variante de color
- * - Muestra esa imagen como swatch circular en el filtro
- * - Si una variante no tiene imagen asignada, usa un color de respaldo
- * - Compatible con el drawer AJAX del tema Platform (MutationObserver)
  */
 
 (function () {
   'use strict';
 
-  // Colores de respaldo por si una variante no tiene imagen asignada
+  // Colores de respaldo si un producto no tiene imagen
   var COLOR_FALLBACK = {
     'ambar':    '#C9A534',
     'ámbar':    '#C9A534',
@@ -37,7 +30,7 @@
     'print':    null,
   };
 
-  var colorImages = {};   // { 'rojo': 'https://cdn.shopify.com/...', ... }
+  var colorImages = {};
   var dataReady   = false;
   var STYLE_ID    = 'cs-swatches-style';
 
@@ -48,10 +41,16 @@
     return m ? m[1] : null;
   }
 
-  // Transforma URL de CDN de Shopify para obtener un thumbnail pequeño
-  // Ejemplo: image.jpg → image_80x.jpg
   function shopifyThumb(src) {
+    // Inserta _80x antes de la extensión para obtener thumbnail pequeño
     return src.replace(/(\.(jpe?g|png|gif|webp|avif))(\?.*)?$/i, '_80x$1$3');
+  }
+
+  function normalizeKey(str) {
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '') // quita tildes
+      .trim();
   }
 
   // ─── Carga de datos via API de Shopify ────────────────────────────────────
@@ -74,21 +73,30 @@
           });
           if (colorIdx < 0) return;
 
-          // Por cada variante del producto, tomar su imagen asignada
+          // Recopilar todos los valores de color únicos en este producto
+          var productColorKeys = [];
           (product.variants || []).forEach(function (variant) {
             var val = variant['option' + (colorIdx + 1)];
             if (!val) return;
+            var key = normalizeKey(val);
 
-            var key = val.toLowerCase().trim();
-
-            // Solo guardar la primera imagen encontrada para ese color
-            if (colorImages[key]) return;
-
-            var fi = variant.featured_image;
-            if (fi && fi.src) {
-              colorImages[key] = shopifyThumb(fi.src);
+            // 1er intento: imagen asignada directamente a la variante
+            if (!colorImages[key] && variant.featured_image && variant.featured_image.src) {
+              colorImages[key] = shopifyThumb(variant.featured_image.src);
             }
+
+            if (productColorKeys.indexOf(key) === -1) productColorKeys.push(key);
           });
+
+          // 2do intento (fallback): si el producto tiene UNA sola variante de color
+          // y aún no tiene imagen mapeada, usar la primera imagen del producto
+          if (
+            productColorKeys.length === 1 &&
+            !colorImages[productColorKeys[0]] &&
+            product.images && product.images.length > 0
+          ) {
+            colorImages[productColorKeys[0]] = shopifyThumb(product.images[0].src);
+          }
         });
 
         dataReady = true;
@@ -126,14 +134,38 @@
     document.head.appendChild(style);
   }
 
+  // ─── Búsqueda de inputs de color en el filtro ─────────────────────────────
+
+  function findColorFilterInputs() {
+    // Estrategia 1: inputs con "color" en el name (filter.p.option.Color)
+    var byName = Array.from(document.querySelectorAll(
+      'input[name*="color" i][type="checkbox"], input[name*="colour" i][type="checkbox"]'
+    ));
+    if (byName.length > 0) return byName;
+
+    // Estrategia 2: buscar la sección de filtro cuyo encabezado sea "Color"
+    // y tomar todos los checkboxes dentro de ella
+    var sections = document.querySelectorAll(
+      'details, [class*="filter"], [class*="facet"], [class*="accordion"]'
+    );
+    for (var i = 0; i < sections.length; i++) {
+      var section = sections[i];
+      var heading = section.querySelector(
+        'summary, button, h2, h3, h4, [class*="heading"], [class*="title"], [class*="label"]'
+      );
+      if (heading && /^color$/i.test(heading.textContent.trim())) {
+        var inputs = Array.from(section.querySelectorAll('input[type="checkbox"]'));
+        if (inputs.length > 0) return inputs;
+      }
+    }
+
+    return [];
+  }
+
   // ─── Inserción de swatches ────────────────────────────────────────────────
 
   function addSwatches() {
-    // Busca todos los checkboxes de filtro de color
-    // En Shopify, los filtros de opción usan name="filter.p.option.{Nombre}"
-    var inputs = document.querySelectorAll(
-      'input[name*="color" i][type="checkbox"], input[name*="colour" i][type="checkbox"]'
-    );
+    var inputs = findColorFilterInputs();
 
     inputs.forEach(function (input) {
       var label = input.id
@@ -142,10 +174,19 @@
 
       if (!label || label.querySelector('.cs-swatch')) return;
 
-      var key     = (input.value || '').toLowerCase().trim();
-      var imgSrc  = colorImages[key];
+      // Obtener clave de color: primero del value del input, sino del texto del label
+      var rawValue = (input.value || '').trim();
+      // Los GIDs de Shopify Search&Discovery no son nombres de color
+      var key = /^gid:|^\d+$/.test(rawValue)
+        ? normalizeKey(label.textContent.replace(/\s*\d+\s*$/, '').trim())
+        : normalizeKey(rawValue);
+
+      if (!key) return;
+
+      var imgSrc   = colorImages[key];
       var fallback = COLOR_FALLBACK[key];
 
+      // Necesitamos al menos imagen o color de respaldo
       if (!imgSrc && fallback === undefined) return;
 
       var swatch = document.createElement('span');
@@ -157,12 +198,11 @@
       } else if (fallback) {
         swatch.style.backgroundColor = fallback;
       } else {
-        // Print u otros colores sin imagen ni hex: patrón por defecto
         swatch.style.background =
-          'repeating-linear-gradient(45deg, #c0392b 0px 3px, #fff 3px 6px, #2980b9 6px 9px, #fff 9px 12px)';
+          'repeating-linear-gradient(45deg,#c0392b 0px 3px,#fff 3px 6px,#2980b9 6px 9px,#fff 9px 12px)';
       }
 
-      // Insertar después del input (si está dentro del label) o al inicio
+      // Insertar después del checkbox (si está dentro del label) o al inicio
       var inputInLabel = label.querySelector('input');
       if (inputInLabel && inputInLabel.nextSibling) {
         label.insertBefore(swatch, inputInLabel.nextSibling);
@@ -177,12 +217,9 @@
   function init() {
     injectStyles();
 
-    // Cargar imágenes de variantes y luego aplicar swatches
-    loadData(function () {
-      addSwatches();
-    });
+    loadData(function () { addSwatches(); });
 
-    // MutationObserver: reaplicar cuando el drawer de filtros se abre (AJAX)
+    // Reaplicar cuando el drawer AJAX del tema Platform carga los filtros
     var observer = new MutationObserver(function (mutations) {
       var hasNew = mutations.some(function (m) { return m.addedNodes.length > 0; });
       if (!hasNew) return;
