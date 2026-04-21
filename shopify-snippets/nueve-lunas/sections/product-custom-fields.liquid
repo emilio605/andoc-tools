@@ -1,0 +1,306 @@
+{% comment %}
+  Nueve Lunas — Sección: Campos Dinámicos del Producto
+  Tema: Dawn (Shopify Reference Theme)
+
+  INSTALACIÓN:
+  1. Shopify Admin → Online Store → Themes → ··· → Edit code
+  2. Crear nuevo archivo en sections/ → product-custom-fields.liquid
+  3. Pegar el contenido de este archivo
+  4. En el template del producto (templates/product.json o templates/product.*.json),
+     agregar la sección en la posición deseada
+
+  USO:
+  - En el customizer, agregar bloques de tipo "Campo" o "Separador"
+  - Cada bloque "Campo" acepta: ícono, etiqueta y valor (texto fijo o metafield)
+  - Compatible con metafields de tipo single_line_text, multi_line_text, rating, etc.
+{% endcomment %}
+
+{%- liquid
+  assign section_heading = section.settings.heading
+  assign show_divider     = section.settings.show_divider
+  assign columns          = section.settings.columns
+-%}
+
+<div class="product-custom-fields page-width{% if show_divider %} product-custom-fields--divider{% endif %} color-{{ section.settings.color_scheme }} gradient"
+     id="product-custom-fields-{{ section.id }}">
+
+  {%- if section_heading != blank -%}
+    <h2 class="product-custom-fields__heading {{ section.settings.heading_size }}">
+      {{ section_heading | escape }}
+    </h2>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <dl class="product-custom-fields__list product-custom-fields__list--cols-{{ columns }}">
+      {%- for block in section.blocks -%}
+
+        {%- case block.type -%}
+
+          {%- when 'field' -%}
+            {%- liquid
+              assign field_label   = block.settings.label
+              assign field_value   = block.settings.value
+              assign field_icon    = block.settings.icon
+              assign metafield_ref = block.settings.metafield_key
+
+              if metafield_ref != blank
+                assign mf_parts    = metafield_ref | split: '.'
+                assign mf_ns       = mf_parts[0]
+                assign mf_key      = mf_parts[1]
+                assign mf_value    = product.metafields[mf_ns][mf_key].value
+                if mf_value != blank
+                  assign field_value = mf_value
+                endif
+              endif
+            -%}
+
+            {%- if field_label != blank and field_value != blank -%}
+              <div class="product-custom-fields__item" {{ block.shopify_attributes }}>
+                {%- if field_icon != blank -%}
+                  <span class="product-custom-fields__icon" aria-hidden="true">
+                    {%- render field_icon -%}
+                  </span>
+                {%- endif -%}
+                <dt class="product-custom-fields__label">{{ field_label | escape }}</dt>
+                <dd class="product-custom-fields__value">{{ field_value }}</dd>
+              </div>
+            {%- endif -%}
+
+          {%- when 'separator' -%}
+            <div class="product-custom-fields__separator" {{ block.shopify_attributes }}
+                 role="separator" aria-hidden="true"></div>
+
+        {%- endcase -%}
+
+      {%- endfor -%}
+    </dl>
+  {%- endif -%}
+
+</div>
+
+{% stylesheet %}
+  .product-custom-fields {
+    padding-top: var(--spacing-section-vertical, 36px);
+    padding-bottom: var(--spacing-section-vertical, 36px);
+  }
+
+  .product-custom-fields--divider {
+    border-top: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  }
+
+  .product-custom-fields__heading {
+    margin-bottom: 2rem;
+  }
+
+  /* Grid de columnas */
+  .product-custom-fields__list {
+    display: grid;
+    gap: 1.2rem 2.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .product-custom-fields__list--cols-1 { grid-template-columns: 1fr; }
+  .product-custom-fields__list--cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .product-custom-fields__list--cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+  @media screen and (max-width: 749px) {
+    .product-custom-fields__list--cols-2,
+    .product-custom-fields__list--cols-3 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Campo individual */
+  .product-custom-fields__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.8rem;
+    align-items: start;
+  }
+
+  .product-custom-fields__icon {
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    padding-top: 0.2rem;
+    color: rgba(var(--color-foreground), 0.6);
+  }
+
+  .product-custom-fields__icon svg {
+    width: 2rem;
+    height: 2rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+
+  .product-custom-fields__label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.6);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .product-custom-fields__value {
+    font-size: 1.4rem;
+    color: rgb(var(--color-foreground));
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Separador */
+  .product-custom-fields__separator {
+    grid-column: 1 / -1;
+    height: 0.1rem;
+    background: rgba(var(--color-foreground), 0.08);
+    margin: 0.8rem 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Campos del producto",
+  "tag": "section",
+  "class": "section",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título de la sección",
+      "default": "Detalles del producto"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamaño del título",
+      "options": [
+        { "value": "h2", "label": "Grande" },
+        { "value": "h3", "label": "Mediano" },
+        { "value": "h4", "label": "Pequeño" }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Columnas",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Mostrar línea divisoria arriba",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "background-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "field",
+      "name": "Campo",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Etiqueta",
+          "placeholder": "p. ej. Material"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Valor (texto fijo)",
+          "placeholder": "p. ej. Cuero genuino"
+        },
+        {
+          "type": "text",
+          "id": "metafield_key",
+          "label": "Metafield (namespace.key)",
+          "info": "Si se indica, reemplaza el valor fijo. Formato: mi_namespace.mi_clave",
+          "placeholder": "custom.material"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícono",
+          "options": [
+            { "value": "",            "label": "Sin ícono" },
+            { "value": "icon-leaf",   "label": "Hoja" },
+            { "value": "icon-star",   "label": "Estrella" },
+            { "value": "icon-truck",  "label": "Envío" },
+            { "value": "icon-tag",    "label": "Etiqueta" },
+            { "value": "icon-globe",  "label": "Globo" },
+            { "value": "icon-clock",  "label": "Reloj" },
+            { "value": "icon-shield", "label": "Escudo" },
+            { "value": "icon-heart",  "label": "Corazón" }
+          ],
+          "default": ""
+        }
+      ]
+    },
+    {
+      "type": "separator",
+      "name": "Separador",
+      "settings": []
+    }
+  ],
+  "presets": [
+    {
+      "name": "Campos del producto",
+      "blocks": [
+        {
+          "type": "field",
+          "settings": {
+            "label": "Material",
+            "value": "Cuero genuino",
+            "icon": "icon-leaf"
+          }
+        },
+        {
+          "type": "field",
+          "settings": {
+            "label": "País de origen",
+            "value": "México",
+            "icon": "icon-globe"
+          }
+        },
+        {
+          "type": "field",
+          "settings": {
+            "label": "Envío",
+            "value": "3–5 días hábiles",
+            "icon": "icon-truck"
+          }
+        },
+        {
+          "type": "field",
+          "settings": {
+            "label": "Garantía",
+            "value": "6 meses",
+            "icon": "icon-shield"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
