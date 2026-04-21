@@ -236,6 +236,31 @@
     // Ocultar el botón combobox (la flecha dropdown visible)
     if (comboBtn) comboBtn.style.display = 'none';
 
+    // Ocultar el label externo que el tema renderiza FUERA del component-custom-select
+    // (el "Talla" / "Color" que aparece como hermano o en el padre)
+    var parent = comp.parentElement;
+    if (parent) {
+      var prev = comp.previousElementSibling;
+      while (prev) {
+        if (prev.textContent.trim() === optionName) {
+          prev.style.display = 'none';
+          break;
+        }
+        prev = prev.previousElementSibling;
+      }
+      // También buscar en el padre por si está envuelto un nivel más arriba
+      if (!prev) {
+        var grandParent = parent.parentElement;
+        if (grandParent) {
+          Array.from(grandParent.children).forEach(function(el) {
+            if (!el.contains(comp) && el.textContent.trim() === optionName) {
+              el.style.display = 'none';
+            }
+          });
+        }
+      }
+    }
+
     // Insertar label + botones al inicio del componente
     comp.insertBefore(container, comp.firstChild);
     comp.insertBefore(dynLabel, comp.firstChild);
