@@ -27,6 +27,24 @@ export default function Dashboard() {
   const { user } = useAuth()
   const name = user?.email?.split('@')[0] || 'equipo'
 
+  const [botPaused, setBotPaused] = useState(() => {
+    try {
+      return localStorage.getItem('andoc_bot_paused') === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  function toggleBot() {
+    const next = !botPaused
+    setBotPaused(next)
+    try {
+      localStorage.setItem('andoc_bot_paused', String(next))
+    } catch {
+      // ignore
+    }
+  }
+
   const [stats, setStats] = useState([
     { label: 'Total Clientes', value: '...', icon: '🏢', color: '#F97316' },
     { label: 'Planes de Medios', value: '...', icon: '📅', color: '#EAB308' },
@@ -107,6 +125,62 @@ export default function Dashboard() {
           <p style={{ fontSize: 14, color: '#475569', marginTop: 6 }}>
             Aquí tienes un resumen del estado actual.
           </p>
+        </div>
+
+        {/* Bot de Grabación */}
+        <div style={{
+          background: botPaused ? 'rgba(100,116,139,0.08)' : 'rgba(34,197,94,0.06)',
+          border: `1px solid ${botPaused ? '#334155' : 'rgba(34,197,94,0.3)'}`,
+          borderRadius: 12,
+          padding: '16px 22px',
+          marginBottom: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: botPaused ? '#475569' : '#22C55E',
+              boxShadow: botPaused ? 'none' : '0 0 8px #22C55E',
+              flexShrink: 0,
+            }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#f8fafc' }}>
+                Bot de Grabación de Reuniones
+              </div>
+              <div style={{ fontSize: 11, color: botPaused ? '#475569' : '#22C55E', marginTop: 2 }}>
+                {botPaused ? 'Pausado — no se unirá a nuevas reuniones' : 'Activo — se une automáticamente a las reuniones'}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={toggleBot}
+            style={{
+              background: botPaused ? 'rgba(249,115,22,0.12)' : 'rgba(100,116,139,0.12)',
+              border: `1px solid ${botPaused ? 'rgba(249,115,22,0.4)' : '#334155'}`,
+              borderRadius: 8,
+              padding: '7px 18px',
+              fontSize: 12,
+              fontWeight: 600,
+              color: botPaused ? '#F97316' : '#94a3b8',
+              cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.opacity = '0.8'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.opacity = '1'
+            }}
+          >
+            {botPaused ? '▶ Reanudar bot' : '⏸ Pausar bot'}
+          </button>
         </div>
 
         {/* Stats */}
