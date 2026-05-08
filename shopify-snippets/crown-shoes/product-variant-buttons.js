@@ -248,9 +248,8 @@
       var labelTxt = labelEl ? labelEl.textContent.toLowerCase() : '';
       var nameTxt  = (select.getAttribute('name') || '').toLowerCase();
 
-      if (/talla|size|taille/i.test(nameTxt) || /talla|size/i.test(labelTxt)) {
-        replaceSelect(select, 'size', labelEl);
-      } else if (/colou?r/i.test(nameTxt) || /^color/i.test(labelTxt.trim())) {
+      // solo reemplazar el selector de color; talla usa el tema por defecto
+      if (/colou?r/i.test(nameTxt) || /^color/i.test(labelTxt.trim())) {
         replaceSelect(select, 'color', labelEl);
       }
     });

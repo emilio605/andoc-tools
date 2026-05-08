@@ -174,7 +174,7 @@
     var optionName = legend ? legend.textContent.trim() : '';
     var isTalla = /talla|size|taille/i.test(optionName);
     var isColor = /colou?r/i.test(optionName);
-    if (!isTalla && !isColor) return;
+    if (!isColor) return;  // solo reemplazar el selector de color; talla usa el tema por defecto
 
     // Radio inputs y botón combobox visible
     var radios = Array.from(comp.querySelectorAll('input[type="radio"]'));
