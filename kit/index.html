@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kit Cierre de Año · Meta Ads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500..800&family=DM+Sans:wght@400..700&family=JetBrains+Mono:wght@400..700&display=swap">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+/* Layout: una columna de herramientas tipo libreta de trabajo; cada bloque es una herramienta que se usa en la casa, en el orden de la semana */
+:root{
+  --bg:#F5F2EA; --card:#FBFAF5; --line:#E2DDD0; --ink:#0F1F1A; --soft:#46524C; --mute:#6B746F;
+  --label:#B93D17; --lime:#C9F25D; --onink:#F5F2EA; --inkcard:#0F1F1A; --orange:#FF6A3D;
+  --ok:#2F7A4B; --okbg:#DCEADF; --warn:#8A5A00; --warnbg:#F3E6C8; --bad:#A8361A; --badbg:#F4D9CC;
+  --display:'Bricolage Grotesque', 'Arial Narrow', Arial, sans-serif;
+  --body:'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+  --mono:'JetBrains Mono', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1F1A; --card:#162922; --line:#2A4038; --ink:#F5F2EA; --soft:#B9C9C0; --mute:#8FA39A;
+  --label:#FF8A63; --lime:#C9F25D; --onink:#F5F2EA; --inkcard:#1D352C; --orange:#FF6A3D;
+  --ok:#9BE0B0; --okbg:#1E3B2B; --warn:#F2CF7A; --warnbg:#3A3220; --bad:#FFAE95; --badbg:#41241B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1F1A; --card:#162922; --line:#2A4038; --ink:#F5F2EA; --soft:#B9C9C0; --mute:#8FA39A;
+  --label:#FF8A63; --lime:#C9F25D; --onink:#F5F2EA; --inkcard:#1D352C; --orange:#FF6A3D;
+  --ok:#9BE0B0; --okbg:#1E3B2B; --warn:#F2CF7A; --warnbg:#3A3220; --bad:#FFAE95; --badbg:#41241B; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;margin:0}
+.wrap{max-width:880px;margin:0 auto;padding-inline:20px;padding-block:32px 64px;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-0.02em}
+h1{font-size:clamp(36px,7vw,60px);line-height:1;font-weight:800}
+h2{font-size:clamp(26px,4.5vw,34px);line-height:1.1;font-weight:700}
+h3{font-size:20px;font-weight:700}
+p{margin:0}
+.label{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--label)}
+.lede{color:var(--soft);max-width:62ch}
+header{display:flex;flex-direction:column;gap:14px;padding-block:8px}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-family:var(--mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--card)}
+nav a:hover,nav a:focus-visible{border-color:var(--ink)}
+section.tool{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:15px;color:var(--soft);min-width:0}
+select,input[type=number],input[type=text],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;font-variant-numeric:tabular-nums}
+textarea{min-height:70px;resize:vertical}
+select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.res{background:var(--inkcard);color:var(--onink);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:2px}
+.res .k{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--lime)}
+.res .v{font-family:var(--display);font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.res .h{font-size:14px;color:#B9C9C0}
+.zones{display:flex;flex-direction:column;gap:8px}
+.zone{border-radius:12px;padding:10px 14px;font-size:15px}
+.zone.bad{background:var(--badbg);color:var(--bad)} .zone.warn{background:var(--warnbg);color:var(--warn)} .zone.ok{background:var(--okbg);color:var(--ok)}
+.zone b{font-variant-numeric:tabular-nums}
+.verdict{border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:4px}
+.verdict .t{font-family:var(--display);font-size:26px;font-weight:800}
+.verdict.ok{background:var(--okbg);color:var(--ok)} .verdict.warn{background:var(--warnbg);color:var(--warn)} .verdict.bad{background:var(--badbg);color:var(--bad)} .verdict.wait{background:var(--bg);color:var(--ink);border:1px dashed var(--mute)}
+.note{font-size:14px;color:var(--mute)}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:600;color:var(--soft)}
+button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:999px;padding:10px 18px;background:var(--ink);color:var(--bg)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.curbar select{width:auto;min-width:220px;font-weight:600}
+.copied{font-family:var(--mono);font-size:13px;color:var(--ok)}
+pre.prompt{white-space:pre-wrap;font-family:var(--mono);font-size:14px;line-height:1.6;background:var(--inkcard);color:var(--onink);border-radius:16px;padding:18px;margin:0;overflow-x:auto}
+ol.week{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ol.week li{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+ol.week li:last-child{border-bottom:1px solid var(--line)}
+ol.week input{width:22px;height:22px;margin-top:2px;flex:none;accent-color:var(--orange)}
+ol.week .d{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--label);width:96px;flex:none;padding-top:3px}
+ol.week label{display:flex;gap:14px;align-items:flex-start;min-width:0;cursor:pointer}
+ul.check{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.cols{display:flex;flex-wrap:wrap;gap:8px}
+.cols span{font-family:var(--mono);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.big{background:var(--inkcard);color:var(--onink);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.big .n{font-family:var(--display);font-size:56px;font-weight:800;color:var(--lime);line-height:1}
+footer{display:flex;flex-direction:column;gap:6px;color:var(--soft);font-size:15px}
+footer .sel{font-family:var(--mono);user-select:all}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <p class="label">Charla Meta Ads · Cierre de año 2026</p>
+  <h1>Tu kit para vender más este cierre de año</h1>
+  <p class="lede">Las mismas herramientas de la charla, para usarlas con tus números. Elige tu moneda. Todo lo que escribes queda guardado solo en este navegador.</p>
+  <div class="row curbar"><label for="moneda" class="label" style="color:var(--soft)">Moneda</label><select id="moneda"><option value="CLP">CLP · peso chileno</option><option value="USD">USD · dólar</option><option value="MXN">MXN · peso mexicano</option><option value="PEN">PEN · sol peruano</option><option value="COP">COP · peso colombiano</option></select></div>
+  <nav aria-label="Herramientas">
+    <a href="#numeros">1 · Tus números</a><a href="#semaforo">2 · Semáforo</a><a href="#columnas">3 · Columnas</a><a href="#semana">4 · Tu semana</a><a href="#plan">5 · Tu plan</a><a href="#prompt">6 · Prompt</a><a href="#oferta">7 · Oferta y creativos</a>
+  </nav>
+</header>
+
+<section class="tool" id="numeros">
+  <p class="label">Herramienta 1</p>
+  <h2>Tus tres números</h2>
+  <p class="lede">Cuánto puedes pagar por una venta sin perder plata, y con qué ROAS ganas lo que buscas. Viene con un ejemplo cargado: cámbialo por tus datos.</p>
+  <div class="grid">
+    <label class="f" for="ticket">Ticket promedio (<span class="cur">CLP</span>)<input type="number" id="ticket" min="0" step="any" value="30000"></label>
+    <label class="f" for="producto">Costo del producto (<span class="cur">CLP</span>)<input type="number" id="producto" min="0" step="any" value="12000"></label>
+    <label class="f" for="otros">Envío, comisiones y otros por pedido (<span class="cur">CLP</span>)<input type="number" id="otros" min="0" step="any" value="6000"></label>
+    <label class="f" for="ganancia">Lo que quiero ganar por venta (<span class="cur">CLP</span>)<input type="number" id="ganancia" min="0" step="any" value="4000"></label>
+    <label class="f" for="presupuesto">Presupuesto diario en Meta (<span class="cur">CLP</span>)<input type="number" id="presupuesto" min="0" step="any" value="36000"></label>
+  </div>
+  <div class="results" aria-live="polite">
+    <div class="res"><span class="k">CAC máximo</span><span class="v" id="o-cac">—</span><span class="h">Lo máximo que pagas por una venta</span></div>
+    <div class="res"><span class="k">ROAS mínimo</span><span class="v" id="o-rmin">—</span><span class="h">Bajo esto, pierdes plata</span></div>
+    <div class="res"><span class="k">ROAS objetivo</span><span class="v" id="o-robj">—</span><span class="h">Sobre esto, escalas</span></div>
+    <div class="res"><span class="k">Conjuntos que caben</span><span class="v" id="o-conj">—</span><span class="h">Presupuesto ÷ CAC</span></div>
+  </div>
+  <div class="zones" id="zones"></div>
+  <p class="note" id="numeros-warn"></p>
+</section>
+
+<section class="tool" id="semaforo">
+  <p class="label">Herramienta 2</p>
+  <h2>Semáforo: ¿lo dejo o lo apago?</h2>
+  <p class="lede">Úsalo anuncio por anuncio. Saca los datos de las columnas de la herramienta 3.</p>
+  <div class="grid">
+    <label class="f" for="s-cac">CAC actual de tu cuenta (<span class="cur">CLP</span>)<input type="number" id="s-cac" min="0" step="any" value="8700"></label>
+    <label class="f" for="s-gasto">Lo que gastó el anuncio (<span class="cur">CLP</span>)<input type="number" id="s-gasto" min="0" step="any" value="9000"></label>
+    <label class="f" for="s-ctr">CTR del enlace (%)<input type="number" id="s-ctr" min="0" step="any" value="1.4"></label>
+    <label class="f" for="s-carritos">Carritos<input type="number" id="s-carritos" min="0" step="any" value="6"></label>
+    <label class="f" for="s-pagos">Pagos iniciados<input type="number" id="s-pagos" min="0" step="any" value="1"></label>
+    <label class="f" for="s-compras">Compras<input type="number" id="s-compras" min="0" step="any" value="0"></label>
+  </div>
+  <div class="verdict wait" id="verdict" aria-live="polite"><span class="t">—</span><span class="w"></span></div>
+  <details>
+    <summary>Ajustar los umbrales de costo por carrito</summary>
+    <p class="note" style="margin-block:8px" id="umbral-note">Vienen de una cuenta real con un CAC cercano a 8.700 CLP. Si tu ticket y tu CAC son muy distintos, ajústalos.</p>
+    <div class="grid">
+      <label class="f" for="u1">Mantener bajo (<span class="cur">CLP</span>)<input type="number" id="u1" step="any" value="2000"></label>
+      <label class="f" for="u2">Observar hasta (<span class="cur">CLP</span>)<input type="number" id="u2" step="any" value="4000"></label>
+      <label class="f" for="u3">Apagar sobre (<span class="cur">CLP</span>)<input type="number" id="u3" step="any" value="6000"></label>
+    </div>
+  </details>
+  <p class="note">Regla 0: ningún anuncio se juzga antes de gastar 1 CAC. Y nunca apagues el último anuncio activo de un conjunto. En eventos, revisa desde el día 2.</p>
+</section>
+
+<section class="tool" id="columnas">
+  <p class="label">Herramienta 3</p>
+  <h2>Arma tus columnas en el Administrador de anuncios</h2>
+  <div class="two">
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <h3>Cómo hacerlo</h3>
+      <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
+        <li>Entra al Administrador de anuncios y abre la pestaña <b>Anuncios</b>.</li>
+        <li>Toca <b>Columnas</b> y elige <b>Personalizar columnas</b>.</li>
+        <li>Busca y marca cada una de las métricas de la lista.</li>
+        <li>Guárdalo como <b>predeterminado</b> para verlo siempre igual.</li>
+      </ol>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <h3>Las 8 que miro</h3>
+      <div class="cols"><span>Importe gastado</span><span>CTR (enlace)</span><span>Agregar al carrito</span><span>Costo por agregar al carrito</span><span>Pagos iniciados</span><span>Compras</span><span>Costo por compra</span><span>ROAS de compras</span></div>
+      <p class="note">Y una vez a la semana, cruza con Shopify: ventas totales ÷ inversión en ads. El ROAS de Meta no es tu venta real.</p>
+    </div>
+  </div>
+</section>
+
+<section class="tool" id="semana">
+  <p class="label">Herramienta 4</p>
+  <h2>Tu primera semana</h2>
+  <ol class="week">
+    <li><label for="w1"><input type="checkbox" id="w1"><span class="d">LUNES</span><span>Saca tus tres números con la herramienta 1.</span></label></li>
+    <li><label for="w2"><input type="checkbox" id="w2"><span class="d">MARTES</span><span>Haz una compra de prueba completa y revisa que el píxel marque el pago iniciado y la compra con valor.</span></label></li>
+    <li><label for="w3"><input type="checkbox" id="w3"><span class="d">MIÉRCOLES</span><span>Divide tu presupuesto por tu CAC y deja solo los conjuntos que caben. Si sobran, junta ángulos.</span></label></li>
+    <li><label for="w4"><input type="checkbox" id="w4"><span class="d">JUEVES</span><span>Pasa el semáforo a cada anuncio que ya gastó 1 CAC.</span></label></li>
+    <li><label for="w5"><input type="checkbox" id="w5"><span class="d">VIERNES</span><span>Sube 10% al conjunto con mejor CAC y anota qué cambiaste.</span></label></li>
+  </ol>
+  <div class="big">
+    <p class="label" style="color:var(--lime)">Desde la semana 2</p>
+    <p class="n">+10%</p>
+    <p>cada 2 o 3 días, mientras tu CAC siga bajo tu CAC máximo. Si se pasa, no subas más y vuelve al semáforo. En Black Friday puedes subir hasta 2 veces al día.</p>
+  </div>
+</section>
+
+<section class="tool" id="plan">
+  <p class="label">Herramienta 5</p>
+  <h2>Mi plan de cierre de año</h2>
+  <div class="grid">
+    <label class="f" for="p-meta">Meta de ventas noviembre–diciembre (<span class="cur">CLP</span>)<input type="text" id="p-meta" placeholder="Ej: 8.000.000"></label>
+    <label class="f" for="p-oferta">Mi oferta para Black Friday<input type="text" id="p-oferta" placeholder="Ej: pack de 3 con envío gratis"></label>
+    <label class="f" for="p-despacho">Mi último día de despacho antes del 24<input type="text" id="p-despacho" placeholder="Ej: 19 de diciembre"></label>
+    <label class="f" for="p-revision">Reviso mis anuncios cada<input type="text" id="p-revision" placeholder="Ej: lunes y jueves"></label>
+  </div>
+  <div class="grid">
+    <label class="f" for="p-escalo">Escalo cuando<textarea id="p-escalo" placeholder="Ej: el ROAS del conjunto pasa mi ROAS objetivo"></textarea></label>
+    <label class="f" for="p-apago">Apago cuando<textarea id="p-apago" placeholder="Ej: gastó 1 CAC sin carritos"></textarea></label>
+    <label class="f" for="p-cambio">Esta semana cambio<textarea id="p-cambio" placeholder="Ej: junto 6 conjuntos en 3"></textarea></label>
+  </div>
+  <p class="note">Fechas clave 2026 en Chile: Black Week 23 al 26 de noviembre · Black Friday 27 al 30 de noviembre · Navidad 25 de diciembre.</p>
+  <div class="row"><button type="button" id="copy-plan">Copiar mi plan</button><span class="copied" id="copied-plan" aria-live="polite"></span></div>
+</section>
+
+<section class="tool" id="prompt">
+  <p class="label">Herramienta 6</p>
+  <h2>El prompt para Claude, con tus números</h2>
+  <label class="f" for="vendo">Qué vendes<input type="text" id="vendo" placeholder="Ej: joyas de plata para regalo" value=""></label>
+  <pre class="prompt" id="prompt-text"></pre>
+  <div class="row"><button type="button" id="copy-prompt">Copiar prompt</button><span class="copied" id="copied-prompt" aria-live="polite"></span></div>
+  <p class="note">Adjunta un export de tus campañas de los últimos 90 días para que el plan salga con tus datos reales.</p>
+</section>
+
+<section class="tool" id="oferta">
+  <p class="label">Herramienta 7</p>
+  <h2>Checklist de oferta y creativos</h2>
+  <div class="two">
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <h3>Oferta</h3>
+      <ul class="check">
+        <li>Si el ROAS no da, sube el ticket con packs antes de bajar el precio.</li>
+        <li>Envío gratis con un umbral un poco sobre tu ticket promedio, y dilo en los anuncios.</li>
+        <li>Descuento creíble: precio normal tachado al lado del precio oferta.</li>
+        <li>En diciembre, ángulo de regalo: sets, packs y cómo llega envuelto.</li>
+        <li>Precio lleno el resto del año: los descuentos son para las fechas.</li>
+      </ul>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <h3>Creativos</h3>
+      <ul class="check">
+        <li>Videos cortos, de 15 a 20 segundos, mostrando el producto.</li>
+        <li>El dueño en cámara: preguntas, proceso o unboxing.</li>
+        <li>Gráficas hechas para vender: precio, oferta y llamado a la acción.</li>
+        <li>Cada pieza en versión feed (4:5) y stories (9:16).</li>
+        <li>Botón "Ver detalles", no "Comprar".</li>
+        <li>El ganador no se rota por calendario: se deja correr mientras venda.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Emilio López · Ando Creativo</b></p>
+  <p>Web: <span class="sel">andocreativo.cl</span> · Instagram: <span class="sel">@emiliogaspar.cl</span> · Correo: <span class="sel">emilio@andocreativo.cl</span></p>
+</footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const KEY='kit-cierre-2026';
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){saved={}}
+  const EX={CLP:{ticket:30000,producto:12000,otros:6000,ganancia:4000,presupuesto:36000,'s-cac':8700,'s-gasto':9000,u1:2000,u2:4000,u3:6000},
+    USD:{ticket:32,producto:13,otros:6,ganancia:4,presupuesto:39,'s-cac':9,'s-gasto':9.5,u1:2,u2:4,u3:6},
+    MXN:{ticket:600,producto:240,otros:120,ganancia:80,presupuesto:720,'s-cac':170,'s-gasto':180,u1:40,u2:80,u3:120},
+    PEN:{ticket:120,producto:48,otros:24,ganancia:16,presupuesto:144,'s-cac':33,'s-gasto':35,u1:7.5,u2:15,u3:22},
+    COP:{ticket:130000,producto:52000,otros:26000,ganancia:17000,presupuesto:156000,'s-cac':37000,'s-gasto':39000,u1:8500,u2:17000,u3:25500}};
+  let cur='CLP';
+  const fields=[...document.querySelectorAll('input,textarea')];
+  fields.forEach(el=>{
+    if(saved[el.id]!==undefined){ if(el.type==='checkbox') el.checked=!!saved[el.id]; else el.value=saved[el.id]; }
+    el.addEventListener('input',()=>{ saved[el.id]=el.type==='checkbox'?el.checked:el.value; try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){} render(); });
+  });
+  const sel=$('moneda');
+  if(saved.moneda&&EX[saved.moneda]){cur=saved.moneda;sel.value=cur;}
+  function setCur(next){
+    Object.keys(EX[next]).forEach(id=>{const el=$(id);const v=parseFloat(el.value);if(el.value===''||v===EX[cur][id]){el.value=EX[next][id];saved[id]=el.value;}});
+    cur=next; saved.moneda=cur; try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}
+    document.querySelectorAll('.cur').forEach(e=>e.textContent=cur);
+    $('umbral-note').textContent=cur==='CLP'?'Vienen de una cuenta real con un CAC cercano a 8.700 CLP. Si tu ticket y tu CAC son muy distintos, ajústalos.':'Son la referencia de una cuenta real en Chile (CAC cercano a 8.700 CLP), llevada a '+cur+' de forma aproximada. Ajústalos a tu ticket y tu CAC.';
+    render();
+  }
+  sel.addEventListener('change',()=>setCur(sel.value));
+  const n=id=>{const v=parseFloat(String($(id).value).replace(',','.'));return isFinite(v)?v:0};
+  const clp=v=>{const z=(cur==='CLP'||cur==='COP');return v.toLocaleString('es-CL',{minimumFractionDigits:0,maximumFractionDigits:z?0:2})+' '+cur};
+  const dec=v=>v.toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2});
+  let nums={};
+  function numbers(){
+    const t=n('ticket'),cac=t-n('producto')-n('otros'),pago=cac-n('ganancia'),pres=n('presupuesto');
+    const ok=t>0&&cac>0;
+    const rmin=ok?t/cac:0, robj=(ok&&pago>0)?t/pago:0, conj=ok?Math.floor(pres/cac):0;
+    $('o-cac').textContent=ok?clp(cac):'—';
+    $('o-rmin').textContent=ok?dec(rmin):'—';
+    $('o-robj').textContent=robj?dec(robj):'—';
+    $('o-conj').textContent=ok?String(conj):'—';
+    $('zones').innerHTML=ok&&robj?`<div class="zone bad">Bajo <b>${dec(rmin)}</b>: pierdes plata. Revisa oferta, ticket, costos y campaña.</div><div class="zone warn">Entre <b>${dec(rmin)}</b> y <b>${dec(robj)}</b>: cubres costos, pero aún no ganas lo que buscas. Optimiza.</div><div class="zone ok">Sobre <b>${dec(robj)}</b>: ganas lo que buscas. Escala de a 10%.</div>`:'';
+    let w='';
+    if(t>0&&cac<=0) w='Con estos costos no queda margen para pagar publicidad. Antes de invertir, sube el ticket (packs) o revisa tus costos.';
+    else if(ok&&pago<=0) w='La ganancia que buscas es mayor que tu CAC máximo: baja la ganancia por venta o sube el ticket.';
+    else if(ok&&conj<1) w='Tu presupuesto diario no alcanza para que un conjunto gaste 1 CAC al día. Parte con un solo conjunto y junta todos tus ángulos ahí.';
+    else if(ok) w='Cada conjunto debe poder gastar al menos 1 CAC al día. Si hoy tienes más conjuntos que esto, júntalos.';
+    $('numeros-warn').textContent=w;
+    nums={t,cac,rmin,robj,pres,ok};
+  }
+  function semaforo(){
+    const cac=n('s-cac'),g=n('s-gasto'),ctr=n('s-ctr'),car=n('s-carritos'),pag=n('s-pagos'),com=n('s-compras');
+    const u1=n('u1'),u2=n('u2'),u3=n('u3');
+    let cls='wait',t='—',w='Completa el CAC de tu cuenta y lo que gastó el anuncio.';
+    const cpc=car>0?g/car:0;
+    if(cac>0&&g>0){
+      if(com>0){cls='ok';t='✓ Mantener';w='Ya tiene compras. Si el conjunto está sobre tu ROAS objetivo, súbele 10%.';}
+      else if(g<cac){cls='wait';t='Todavía no lo juzgues';w=`Lleva ${clp(g)} de ${clp(cac)}: no ha gastado 1 CAC. Con menos gasto no hay información.${ctr>0&&ctr<1?' Ojo con el CTR bajo 1%: revísalo cuando llegue a 1 CAC.':''}`;}
+      else if(car===0){cls='bad';t='✕ Apagar';w='Gastó 1 CAC o más sin un solo carrito. Recuerda: nunca apagues el último anuncio activo del conjunto.';}
+      else if(cpc<u1){cls='ok';t='✓ Mantener';w=`Cada carrito cuesta ${clp(cpc)}, bajo ${clp(u1)}.${ctr>=1?' Y el CTR sobre 1% dice que el anuncio hace su pega.':''}`;}
+      else if(cpc<=u2||pag>0){cls='warn';t='◐ Observar';w=`Cada carrito cuesta ${clp(cpc)}${pag>0?' y tiene pagos iniciados sin compra':''}. Dale unos días más antes de decidir.`;}
+      else if(cpc>u3){cls='bad';t='✕ Apagar';w=`Cada carrito cuesta ${clp(cpc)}, sobre ${clp(u3)}.`;}
+      else {cls='warn';t='◐ Observar de cerca';w=`Cada carrito cuesta ${clp(cpc)}, entre ${clp(u2)} y ${clp(u3)}. Si sube de ${clp(u3)}, apágalo.`;}
+    }
+    const v=$('verdict'); v.className='verdict '+cls; v.querySelector('.t').textContent=t; v.querySelector('.w').textContent=w;
+  }
+  function promptText(){
+    const vendo=$('vendo').value.trim()||'[qué vendes]';
+    const c=nums.ok?clp(nums.cac):'[$__]', r1=nums.ok?dec(nums.rmin):'[__]', r2=nums.robj?dec(nums.robj):'[__]', p=nums.pres>0?clp(nums.pres):'[$__]';
+    return `Eres especialista en Meta Ads para ecommerce. Arma mi plan de cierre de año, de octubre a enero.\n\nVendo ${vendo}. Mi CAC máximo es ${c}, mi ROAS mínimo ${r1}, mi ROAS objetivo ${r2} y mi presupuesto diario ${p}.\n\nReglas: una campaña de ventas con conjuntos por ángulo y el remarketing como un conjunto más (70% abierto, 30% remarketing); conjuntos = presupuesto ÷ CAC; escalar de a 10% cada 2 o 3 días; no juzgar un anuncio antes de 1 CAC; medir contra las ventas reales de Shopify.\n\n${cur==='CLP'?'Fechas en Chile: Black Week 23 al 26 de noviembre, Black Friday 27 al 30 de noviembre, Navidad 25 de diciembre.':'Fechas: Black Friday 27 de noviembre (y su fin de semana), Navidad 25 de diciembre. Ajusta a las fechas de tu país.'}\n\nDame fechas clave, estructura, presupuesto por mes, oferta y creativos para cada fecha, y un solo cambio para esta semana.`;
+  }
+  function render(){numbers();semaforo();$('prompt-text').textContent=promptText();}
+  function copy(text,out,btn){
+    const done=m=>{out.textContent=m;setTimeout(()=>out.textContent='',2500)};
+    try{navigator.clipboard.writeText(text).then(()=>done('Copiado'),()=>fallback())}catch(e){fallback()}
+    function fallback(){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done('Copiado')}catch(e){done('Selecciona el texto y cópialo')}ta.remove();}
+  }
+  $('copy-prompt').addEventListener('click',()=>copy(promptText(),$('copied-prompt')));
+  $('copy-plan').addEventListener('click',()=>{
+    const g=id=>$(id).value.trim()||'—';
+    const txt=`MI PLAN DE CIERRE DE AÑO\nCAC máximo: ${$('o-cac').textContent}\nROAS mínimo: ${$('o-rmin').textContent}\nROAS objetivo: ${$('o-robj').textContent}\nPresupuesto diario: ${nums.pres>0?clp(nums.pres):'—'}\nConjuntos que caben: ${$('o-conj').textContent}\nMeta de ventas: ${g('p-meta')}\nOferta Black Friday: ${g('p-oferta')}\nÚltimo despacho: ${g('p-despacho')}\nReviso cada: ${g('p-revision')}\nEscalo cuando: ${g('p-escalo')}\nApago cuando: ${g('p-apago')}\nEsta semana cambio: ${g('p-cambio')}`;
+    copy(txt,$('copied-plan'));
+  });
+  document.querySelectorAll('.cur').forEach(e=>e.textContent=cur);
+  if(cur!=='CLP') $('umbral-note').textContent='Son la referencia de una cuenta real en Chile (CAC cercano a 8.700 CLP), llevada a '+cur+' de forma aproximada. Ajústalos a tu ticket y tu CAC.';
+  render();
+})();
+</script>
+
+</body>
+</html>
