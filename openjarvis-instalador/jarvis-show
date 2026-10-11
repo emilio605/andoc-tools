@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# jarvis-show (Mac): enciende OpenJarvis con dos aplausos.
+# Uso: ./jarvis-show            escuchar aplausos
+#      ./jarvis-show --listar   ver micrófonos
+#      ./jarvis-show --medir    calibrar sensibilidad
+cd "$(dirname "$0")" && exec uv run python jarvis_show.py "$@"
