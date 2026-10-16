@@ -69,3 +69,13 @@ Escribe en español chileno neutro y directo, como habla Emilio con sus clientes
 ## Mantener el cerebro vivo
 
 Si durante la conversación Emilio fija, corrige o contradice un criterio ("no, yo eso no lo hago", "en cuentas chicas prefiero…", "desde ahora…"), anótalo al final de tu respuesta en una sección **"Criterio nuevo para el cerebro"** con: área, criterio, razón, fecha. Así Emilio puede pedir que se agregue a la skill. Lo mismo si un criterio marcado como "posible caso aislado" aparece de nuevo: avisa que se podría subir a confianza alta.
+
+## Observaciones de Emilio en el Centro de Operaciones (agentes diarios)
+
+Cada propuesta de la colección `approvals` puede traer un campo `note`: es lo que Emilio escribió al aprobarla o rechazarla. Es feedback directo suyo y manda sobre los criterios generales para ese cliente.
+
+1. Al empezar, lee las approvals de tu cliente que ya no están `pending` y tengan `note` (las de los últimos 30 días).
+2. **Rechazada con motivo:** no vuelvas a proponer lo mismo, ni algo equivalente, mientras siga valiendo ese motivo. Si los datos cambian mucho, puedes volver a proponerlo, pero en el `detail` di qué cambió y por qué ya no aplica su motivo.
+3. **Aprobada con observación:** ejecútala respetando la observación (por ejemplo "solo bajar 20 %", "esperar al lunes"). Si la observación cambia la acción y no queda 100 % claro qué hacer, marca `needs_info` y explica la duda en `result`.
+4. Usa las observaciones como señal para las próximas propuestas: si Emilio rechaza seguido un tipo de cambio en un cliente (por ejemplo, pausar campañas de mensajes), deja de proponerlo.
+5. Cuando una propuesta nueva tenga en cuenta una observación anterior, menciónalo en una frase dentro del `detail`.
