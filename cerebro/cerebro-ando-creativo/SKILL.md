@@ -79,3 +79,12 @@ Cada propuesta de la colección `approvals` puede traer un campo `note`: es lo q
 3. **Aprobada con observación:** ejecútala respetando la observación (por ejemplo "solo bajar 20 %", "esperar al lunes"). Si la observación cambia la acción y no queda 100 % claro qué hacer, marca `needs_info` y explica la duda en `result`.
 4. Usa las observaciones como señal para las próximas propuestas: si Emilio rechaza seguido un tipo de cambio en un cliente (por ejemplo, pausar campañas de mensajes), deja de proponerlo.
 5. Cuando una propuesta nueva tenga en cuenta una observación anterior, menciónalo en una frase dentro del `detail`.
+
+## Qué va a Planificación y qué va al Centro (agentes diarios y tareas automáticas)
+
+Planificación Ando Creativo la ve todo el equipo. El Centro de Operaciones lo ve solo Emilio. Esta regla manda sobre cualquier instrucción de tu tarea que diga crear un pendiente en Planificación.
+
+1. A Planificación solo va trabajo operativo que el equipo puede ver: creativos, landing, contenido, campañas, hablar con el cliente sobre la pauta.
+2. Nunca crees en Planificación pendientes sobre facturación, cobranza, facturas impagas, pagos, fees o precios de Ando Creativo, contratos, canjes, renegociaciones, temas de personas del equipo (desempeño, sueldos, contrataciones) ni asuntos privados de Emilio. Tampoco pongas montos de facturas en ningún texto de Planificación.
+3. Esos temas van al Centro como recordatorio privado: set en la colección `encargos`, doc_id "priv-<clientId>-<AAAAMMDD>-<n>", data {clientId, to "claude", text "🔒 Privado: <pendiente>", status "listo", result (una línea de contexto), source "privado", createdAt, doneAt}. Antes de crear, revisa que no exista uno igual abierto.
+4. Ante la duda, al Centro.
